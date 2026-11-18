@@ -9,10 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#eef1f3; --panel:#ffffff; --ink:#17202a; --muted:#5b6672; --rule:#d5dbe0; --field:#f4f6f8;
+  --bg:#eef1f3; --panel:#ffffff; --ink:#17202a; --muted:#5b6672; --rule:#d5dbe0; --field:#f3f5f7;
   --glassA:#fbfdfe; --glassB:#c5d0d9; --front:#2a5bd7; --back:#c0267a;
-  --rayout:#8592a0; --rayin:#c99700; --accent:#2a5bd7; --c1:#0f8a6e; --c2:#7a4cc2;
-  --warn:#b42318; --grid:#e3e8ec;
+  --rayout:#8592a0; --rayin:#c99700; --accent:#2a5bd7; --c1:#0f8a6e; --c2:#7a4cc2; --c3:#c25e0f;
+  --warn:#b42318; --grid:#e3e8ec; --hdr:52px;
   color-scheme:light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -20,111 +20,198 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#101418; --panel:#171d23; --ink:#e6ebf0; --muted:#95a2af; --rule:#2a333c; --field:#1e252c;
+    --bg:#101418; --panel:#171d23; --ink:#e6ebf0; --muted:#95a2af; --rule:#2a333c; --field:#1f262d;
     --glassA:#77828c; --glassB:#2b323a; --front:#7aa3ff; --back:#ff72b6;
-    --rayout:#c3ccd5; --rayin:#ffd23f; --accent:#7aa3ff; --c1:#3fd1a8; --c2:#b590ff;
+    --rayout:#c3ccd5; --rayin:#ffd23f; --accent:#7aa3ff; --c1:#3fd1a8; --c2:#b590ff; --c3:#ffa25c;
     --warn:#ff7a6b; --grid:#232b33;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#101418; --panel:#171d23; --ink:#e6ebf0; --muted:#95a2af; --rule:#2a333c; --field:#1e252c;
+  --bg:#101418; --panel:#171d23; --ink:#e6ebf0; --muted:#95a2af; --rule:#2a333c; --field:#1f262d;
   --glassA:#77828c; --glassB:#2b323a; --front:#7aa3ff; --back:#ff72b6;
-  --rayout:#c3ccd5; --rayin:#ffd23f; --accent:#7aa3ff; --c1:#3fd1a8; --c2:#b590ff;
+  --rayout:#c3ccd5; --rayin:#ffd23f; --accent:#7aa3ff; --c1:#3fd1a8; --c2:#b590ff; --c3:#ffa25c;
   --warn:#ff7a6b; --grid:#232b33;
   color-scheme:dark;
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + var(--hdr))}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);
-  font:15px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font:14.5px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   font-variant-numeric:tabular-nums}
-.wrap{max-width:1420px;margin:0 auto;padding:20px 18px 48px}
-header{margin-bottom:18px}
-h1{font-size:30px;line-height:1.15;font-weight:600;letter-spacing:-0.015em;margin:0 0 8px}
-.lede{max-width:78ch;margin:0;color:var(--muted)}
-h2{font-size:18px;font-weight:600;margin:0 0 10px;letter-spacing:-0.005em}
-h3{font-size:15px;font-weight:600;margin:0 0 6px}
-.layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
-aside.controls{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;
-  background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
-@media (max-width:920px){.layout{grid-template-columns:1fr} aside.controls{position:static;max-height:none}}
-fieldset{border:0;padding:0 0 12px;margin:0 0 12px;border-bottom:1px solid var(--rule)}
-fieldset:last-child{border-bottom:0;margin-bottom:0}
-legend{font-weight:600;font-size:14px;padding:0;margin-bottom:4px}
-.ctl{display:grid;grid-template-columns:1fr auto;gap:0 8px;margin:7px 0}
-.ctl label{font-size:13px}
-.ctl output{font-size:13px;color:var(--muted)}
-.ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:2px 0 0}
-.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0;font-size:13px}
-select,input[type=number]{font:inherit;font-size:13px;color:var(--ink);background:var(--field);
-  border:1px solid var(--rule);border-radius:6px;padding:4px 6px}
-input[type=number]{width:84px}
-button{font:inherit;font-size:13px;color:var(--ink);background:var(--field);border:1px solid var(--rule);
-  border-radius:6px;padding:4px 10px;cursor:pointer}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--panel)}
+button,select,input{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- header / pulse toolbar ---------- */
+.top{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;padding:9px 16px;
+  background:var(--panel);border-bottom:1px solid var(--rule)}
+@media (min-width:900px){.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30}}
+h1{font-size:18px;line-height:1.2;margin:0;font-weight:600;letter-spacing:-0.01em;white-space:nowrap}
+.toolbar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;flex:1;min-width:0}
+.toolbar label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
+.toolbar input[type=range]{width:100px;accent-color:var(--accent)}
+.toolbar output{display:inline-block;min-width:112px;font-size:12.5px;color:var(--ink)}
+.sep{width:1px;height:22px;background:var(--rule)}
+.animNote{flex:1 1 180px;min-width:0;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button{font-size:13px;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
 button:hover{border-color:var(--accent)}
 button[aria-pressed="true"]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#play{min-width:86px;font-weight:600}
+select,input[type=number]{font-size:13px;color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:4px 6px}
+input[type=number]{width:80px}
+
+/* ---------- page layout ---------- */
+.page{padding:12px 14px 40px;max-width:2400px;margin:0 auto}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;align-items:start}
+body.nopanel .layout{grid-template-columns:minmax(0,1fr)}
+body.nopanel aside.controls{display:none}
+@media (max-width:899px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+aside.controls{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:4px 14px 8px}
+@media (min-width:900px){aside.controls{position:sticky;top:calc(var(--hdr) + 12px);max-height:calc(100vh - var(--hdr) - 24px);overflow:auto}}
+details{border-bottom:1px solid var(--rule);padding:4px 0 8px}
+details:last-child{border-bottom:0}
+summary{font-weight:600;font-size:14px;cursor:pointer;padding:5px 0}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:0 8px;margin:6px 0}
+.ctl label{font-size:13px}
+.ctl output{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:2px 0 0}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0;font-size:13px}
 .seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
-.seg label{padding:3px 9px;font-size:12.5px;cursor:pointer;background:var(--field)}
+.seg label{position:relative;padding:3px 9px;font-size:12.5px;cursor:pointer;background:var(--field);white-space:nowrap}
 .seg input{position:absolute;opacity:0;pointer-events:none}
 .seg input:checked+span{color:var(--accent);font-weight:600}
 .seg input:focus-visible+span{outline:2px solid var(--accent)}
-.hint{font-size:12.5px;color:var(--muted);margin:4px 0 0}
-main{display:grid;gap:18px;min-width:0}
-.stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px}
-@media (max-width:1240px){.stage{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;min-width:0}
-figure{margin:0}
-figcaption{font-size:13px;color:var(--muted);margin-top:8px}
-#sec{width:100%;height:auto;display:block;touch-action:none;user-select:none}
-.viewbox{position:relative;max-width:520px;margin:0 auto}
-#view{width:100%;aspect-ratio:1;display:block;background:#000;border-radius:6px}
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);margin-top:8px}
-.sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px;border:1px solid var(--rule)}
-.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
-dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 14px;margin:0;font-size:14px}
-dt{color:var(--muted)}
-dd{margin:0;text-align:right;font-weight:500}
-dd small{display:block;font-weight:400;color:var(--muted);font-size:12px}
-.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
-.charts svg{width:100%;height:auto;display:block}
-.prose{max-width:75ch}
-.prose p{margin:0 0 10px}
-.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px 28px}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+
+.maincol{display:grid;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;min-width:0;min-height:0;display:flex;flex-direction:column}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:4px 10px;margin-bottom:6px;flex-wrap:wrap}
+.cardhead .hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.card h2{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
+h3{font-size:15px;font-weight:600;margin:0 0 6px}
+
+/* the dashboard: narrow and portrait screens stack everything */
+.dash{display:grid;gap:14px;grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"sec" "view" "charts" "layers" "stats"}
+#secCard{grid-area:sec} #viewCard{grid-area:view} #chartCard{grid-area:charts}
+#layersCard{grid-area:layers} #statsCard{grid-area:stats}
+
+.fit{position:relative;container-type:size;min-height:0;width:100%}
+.fit > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fit > canvas{position:absolute;inset:0;margin:auto;width:min(100cqw,100cqh);height:min(100cqw,100cqh);display:block;border-radius:6px}
+#secFit{aspect-ratio:640 / 600;max-height:82vh}
+#viewFit{aspect-ratio:1;max-height:82vh}
+#view{background:#000}
+#chartFit{height:280px}
+#sec{touch-action:none;user-select:none}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;min-height:0}
+.art{display:flex;flex-direction:column;min-height:0;min-width:0}
+.art .fit{aspect-ratio:1}
+.artcap{font-size:12.5px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artcap b{color:var(--ink);font-weight:600}
+
+.legend{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend span{white-space:nowrap}
+i.ln{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+i.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+i.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.tabs{display:inline-flex;gap:2px;background:var(--field);border-radius:8px;padding:2px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;padding:4px 10px;border-radius:6px}
+.tabs button[aria-selected="true"]{background:var(--panel);box-shadow:0 0 0 1px var(--rule);font-weight:600;color:var(--ink)}
+.cap{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.tile{background:var(--field);border-radius:8px;padding:6px 10px 7px;min-width:0}
+.tl,.tn{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv{font-size:17px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile.key{box-shadow:inset 3px 0 0 var(--accent)}
+
+/* square-ish and landscape screens: section and view side by side */
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+  .dash{grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-areas:"sec view" "charts layers" "stats stats"}
+  #secFit,#viewFit{aspect-ratio:1;max-height:calc(100vh - var(--hdr) - 110px)}
+  #chartFit{height:clamp(220px,34vh,360px)}
+}
+/* landscape 3:2 to 16:9: everything on one screen, section and view on top */
+@media (min-width:1200px) and (min-aspect-ratio:3/2){
+  .dash{height:calc(100vh - var(--hdr) - 24px);min-height:600px;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    grid-template-rows:minmax(0,1.55fr) minmax(0,1fr);
+    grid-template-areas:"sec sec sec view view view" "charts charts layers layers stats stats"}
+  #secFit,#viewFit,#chartFit,.art .fit{flex:1 1 0;height:auto;aspect-ratio:auto;max-height:none}
+  .pair{flex:1 1 0}
+  #statsCard{overflow:auto}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+}
+/* wide screens 16:9 and wider: numbers join the top row */
+@media (min-width:1200px) and (min-aspect-ratio:16/9){
+  .dash{grid-template-rows:minmax(0,1.45fr) minmax(0,1fr);
+    grid-template-areas:"sec sec view view stats stats" "charts charts charts layers layers layers"}
+}
+
+@media (min-width:1200px) and (min-aspect-ratio:3/2){
+  #chartCap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
+@media (max-width:640px){
+  .top{gap:6px 10px}
+  h1{width:100%}
+  .toolbar output{min-width:0}
+  .toolbar input[type=range]{width:80px}
+  .animNote{flex-basis:100%}
+}
+/* ---------- reading sections ---------- */
+.prose{max-width:none}
+.prose p{margin:0 0 10px;max-width:75ch}
+.concepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px 28px}
 .concepts > div{min-width:0}
-.f{font-style:italic;white-space:nowrap}
 .formula{background:var(--field);border-radius:6px;padding:6px 10px;margin:6px 0 10px;font-size:14px;overflow-x:auto}
-ol.steps{margin:0;padding-left:22px}
+ol.steps{margin:0;padding-left:22px;max-width:90ch}
 ol.steps li{margin:0 0 6px}
 #beat{width:100%;height:auto;display:block;border-radius:6px;background:#000}
-.beatlbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:4px}
+.beatlbl{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:4px}
 textarea{width:100%;min-height:170px;font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   color:var(--ink);background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:8px;resize:vertical}
 pre{margin:0;overflow-x:auto;background:var(--field);border:1px solid var(--rule);border-radius:6px;padding:10px;
   font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .exportgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
-.warn{color:var(--warn)}
 svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 .lbl{font-size:12.5px;fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 .lblk{font-size:12.5px;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <h1>Glass sphere moiré model</h1>
-  <p class="lede">A solid glass sphere, cut by a back plane. Pattern A is printed on the curved front, pattern B on the back. Every line of sight pairs a front point P with a back point Q, and the spacing of the Q’s compared with the spacing of the P’s is the scale B must have to line up with A. Detune that scale a little and the mismatch becomes a moiré of controlled size.</p>
+<header class="top" id="top">
+  <h1>Glass sphere moiré</h1>
+  <div class="toolbar" role="group" aria-label="Pulse animation">
+    <button id="panelBtn" type="button" aria-pressed="true" title="Show or hide the parameter panel">Parameters</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button id="play" type="button" aria-pressed="false">▶ Pulse</button>
+    <select id="animMode" aria-label="Kind of pulse">
+      <option value="walk">Visitor walks in and out</option>
+      <option value="sway">Visitor sways sideways</option>
+      <option value="breathe">Breathing: detune</option>
+      <option value="rotate">Swing: back layer turns</option>
+      <option value="phase">Flow: back layer slides</option>
+    </select>
+    <label>Amount <input id="animAmt" type="range" min="0" max="1" step="0.01" value="0.8"><output id="animAmtO"></output></label>
+    <label>Period <input id="animPer" type="range" min="1" max="12" step="0.5" value="5"><output id="animPerO" style="min-width:36px"></output></label>
+    <span class="animNote" id="animNote"></span>
+  </div>
 </header>
 
+<div class="page">
 <div class="layout">
-<aside class="controls" aria-label="Parameters">
-  <fieldset>
-    <legend>Glass and cut</legend>
+<aside class="controls" id="panel" aria-label="Parameters">
+  <details open>
+    <summary>Glass and cut</summary>
     <div class="row"><label for="R">Sphere radius R</label><input id="R" type="number" min="5" max="2000" step="1" value="100"> mm</div>
     <div class="ctl"><label for="c">Back plane position c / R</label><output id="cO"></output>
       <input id="c" type="range" min="-0.6" max="1" step="0.005" value="0.79"></div>
-    <div class="row"><button id="fullBtn" type="button">Full sphere</button><button id="imgBtn" type="button">Your drawing (0.79 R)</button></div>
+    <div class="row"><button id="fullBtn" type="button">Full sphere</button><button id="hemiBtn" type="button">Hemisphere</button><button id="imgBtn" type="button">Your cut 0.79 R</button></div>
     <div class="ctl"><label for="n">Refractive index n</label><output id="nO"></output>
       <input id="n" type="range" min="1" max="2" step="0.005" value="1.5"></div>
     <div class="row"><select id="nPreset" aria-label="Material preset">
@@ -137,44 +224,35 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
       <option value="1.333">Water-filled thin shell 1.33</option>
       <option value="1">Empty thin shell (air) 1.00</option>
     </select></div>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Viewer</legend>
-    <div class="ctl"><label for="D">Eye distance to front surface</label><output id="DO"></output>
+  <details open>
+    <summary>Viewer</summary>
+    <div class="ctl"><label for="D">Eye distance to front</label><output id="DO"></output>
       <input id="D" type="range" min="0" max="1" step="0.001" value="0.5396"></div>
     <div class="row"><label><input id="Dinf" type="checkbox"> Very far (parallel rays)</label></div>
     <div class="ctl"><label for="alpha">Viewing angle α</label><output id="alphaO"></output>
       <input id="alpha" type="range" min="-40" max="40" step="0.5" value="0"></div>
-    <div class="row"><button id="wobble" type="button" aria-pressed="false">Sway head ±6°</button></div>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Section</legend>
-    <div class="ctl"><label for="rays">Number of rays</label><output id="raysO"></output>
-      <input id="rays" type="range" min="3" max="41" step="2" value="15"></div>
-    <div class="ctl"><label for="probe">Probe ray position</label><output id="probeO"></output>
-      <input id="probe" type="range" min="-1" max="1" step="0.005" value="0.45"></div>
-  </fieldset>
-
-  <fieldset>
-    <legend>Pattern A (front)</legend>
+  <details open>
+    <summary>Pattern A (front)</summary>
     <div class="row"><select id="pat" aria-label="Pattern type">
       <option value="lines">Parallel lines</option>
       <option value="rings">Concentric rings</option>
       <option value="dots">Dot grid</option>
       <option value="spokes">Radial spokes</option>
     </select></div>
-    <div class="ctl"><label for="p">Pitch p (on front artwork)</label><output id="pO"></output>
+    <div class="ctl"><label for="p">Pitch p</label><output id="pO"></output>
       <input id="p" type="range" min="1" max="20" step="0.1" value="4"></div>
     <div class="ctl"><label for="duty">Ink coverage</label><output id="dutyO"></output>
       <input id="duty" type="range" min="0.1" max="0.7" step="0.01" value="0.4"></div>
     <div class="ctl"><label for="th">Orientation θ</label><output id="thO"></output>
       <input id="th" type="range" min="0" max="180" step="1" value="0"></div>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Pattern B (back)</legend>
+  <details open>
+    <summary>Pattern B (back)</summary>
     <div class="row seg" role="radiogroup" aria-label="How B is made">
       <label><input type="radio" name="mode" value="uniform"><span>Uniform scale k</span></label>
       <label><input type="radio" name="mode" value="warp" checked><span>Pre-distorted</span></label>
@@ -188,10 +266,14 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
       <input id="dth" type="range" min="-15" max="15" step="0.1" value="0"></div>
     <div class="row"><label><input id="lock" type="checkbox"> Lock design eye where it is now</label></div>
     <p class="hint" id="designNote"></p>
-  </fieldset>
+  </details>
 
-  <fieldset>
-    <legend>Display</legend>
+  <details>
+    <summary>Section and display</summary>
+    <div class="ctl"><label for="rays">Number of rays</label><output id="raysO"></output>
+      <input id="rays" type="range" min="3" max="41" step="2" value="15"></div>
+    <div class="ctl"><label for="probe">Probe ray position</label><output id="probeO"></output>
+      <input id="probe" type="range" min="-1" max="1" step="0.005" value="0.45"></div>
     <div class="row seg" role="radiogroup" aria-label="Layers shown">
       <label><input type="radio" name="show" value="both" checked><span>A + B</span></label>
       <label><input type="radio" name="show" value="front"><span>A only</span></label>
@@ -201,118 +283,140 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
       <label><input type="radio" name="ink" value="mono" checked><span>Black ink</span></label>
       <label><input type="radio" name="ink" value="col"><span>A blue, B magenta</span></label>
     </div>
-    <div class="ctl"><label for="zoom">Zoom</label><output id="zoomO"></output>
+    <div class="ctl"><label for="zoom">View zoom</label><output id="zoomO"></output>
       <input id="zoom" type="range" min="1" max="4" step="0.05" value="1"></div>
     <div class="row"><label for="q">Quality</label><select id="q"><option value="1">Fast</option><option value="2" selected>Good</option><option value="3">Best</option></select></div>
-  </fieldset>
+  </details>
 </aside>
 
-<main>
-  <section class="stage">
-    <div class="card">
-      <figure>
-        <svg id="sec" viewBox="0 0 640 600" role="img" aria-label="Section of the sphere with ray paths"></svg>
-        <figcaption>Section through the axis, viewer below. Drag the back plane up or down; drag on the glass to move the probe ray. Grey: line of sight in air. Yellow: the same ray inside the glass after refraction. Blue dots P on the front, magenta dots Q on the back: equal steps on A become these steps on B.</figcaption>
-      </figure>
-    </div>
-    <div class="card">
-      <figure>
-        <div class="viewbox"><canvas id="view" width="420" height="420" aria-label="Simulated view of both patterns"></canvas></div>
-        <div class="legend">
-          <span><span class="sw" style="background:#9aa0a6"></span>glass</span>
-          <span><span class="sw" style="background:#62676d"></span>line of sight lands on the curved back, not on the plane</span>
-          <span><span class="sw" style="background:#b56a6a"></span>no match possible (beyond the fold)</span>
-        </div>
-        <figcaption>Ray-traced view from the eye: front ink × back ink. The dashed line is the section plane, the ring marks the probe point.</figcaption>
-      </figure>
+<div class="maincol">
+<main class="dash">
+  <section class="card" id="secCard">
+    <div class="cardhead"><h2>Section</h2><span class="hint">Drag the back plane, or drag on the glass to move the probe</span></div>
+    <div class="fit" id="secFit"><svg id="sec" viewBox="0 0 640 600" role="img" aria-label="Section of the sphere with ray paths"></svg></div>
+    <div class="legend">
+      <span><i class="ln" style="background:var(--rayout)"></i>sight line in air</span>
+      <span><i class="ln" style="background:var(--rayin)"></i>inside the glass</span>
+      <span><i class="dot" style="background:var(--front)"></i>P on A, front</span>
+      <span><i class="dot" style="background:var(--back)"></i>Q on B, back</span>
     </div>
   </section>
 
-  <section class="nums">
-    <div class="card">
-      <h2>Centre of the sphere (on axis)</h2>
-      <dl id="centreDL"></dl>
-    </div>
-    <div class="card">
-      <h2>Probe ray</h2>
-      <dl id="probeDL"></dl>
-    </div>
-  </section>
-
-  <section class="charts">
-    <div class="card">
-      <h2>Scale factor of B relative to A</h2>
-      <svg id="ch1" viewBox="0 0 560 260" role="img" aria-label="Scale factor along the section"></svg>
-      <p class="hint">m<sub>r</sub>: across rings (radial). m<sub>t</sub>: along rings (tangential). Where a curve meets the k line, uniform B matches A exactly and fringes become infinitely wide.</p>
-    </div>
-    <div class="card">
-      <h2>Local moiré period</h2>
-      <svg id="ch2" viewBox="0 0 560 260" role="img" aria-label="Local moiré period along the section"></svg>
-      <p class="hint">Fringe spacing measured on the front artwork, for the current eye. A flat line means evenly spaced fringes; curves hitting the top are regions of near-perfect match.</p>
+  <section class="card" id="viewCard">
+    <div class="cardhead"><h2>What the viewer sees</h2><span class="hint" id="viewHint"></span></div>
+    <div class="fit" id="viewFit"><canvas id="view" width="420" height="420" aria-label="Ray-traced view of both patterns"></canvas></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#9aa0a6"></i>glass</span>
+      <span><i class="sw" style="background:#62676d"></i>sight lands on curved back</span>
+      <span><i class="sw" style="background:#b56a6a"></i>no match possible</span>
+      <span><i class="ln" style="background:#ffd23f"></i>section line, probe</span>
     </div>
   </section>
 
-  <section class="card">
-    <h2>How it works</h2>
-    <div class="concepts">
-      <div class="prose">
-        <h3>Line of sight</h3>
-        <p>The ray from the eye meets the front at P, bends toward the surface normal and continues straight through the glass to Q on the back. Ink at P and ink at Q appear on top of each other. For B to line up with A, the back artwork must carry at Q what A carries at P.</p>
-        <div class="formula">Snell: sin i = n · sin r</div>
-        <p>The front pattern sits on the outer surface, so you see it without refraction. Only B is seen through the glass.</p>
+  <section class="card" id="chartCard">
+    <div class="cardhead">
+      <div class="tabs" role="tablist" aria-label="Charts">
+        <button type="button" role="tab" data-tab="scale" aria-selected="true">Scale factor</button>
+        <button type="button" role="tab" data-tab="moire" aria-selected="false">Moiré period</button>
+        <button type="button" role="tab" data-tab="pulse" aria-selected="false">Pulse vs distance</button>
       </div>
-      <div class="prose">
-        <h3>Why B is smaller</h3>
-        <p>The curved front is a converging lens surface. Near the axis the rays inside head for a point F′ at distance s′ behind the front vertex. At the back, an axial distance L = R + c away, every height has shrunk by the same factor m₀.</p>
-        <div class="formula" id="fParax"></div>
-        <p>If the plane sits at F′, m₀ = 0: the whole back collapses into one point and any B pattern is hugely magnified. Behind F′, m₀ is negative and B appears upside down.</p>
+    </div>
+    <div class="fit" id="chartFit"><svg id="chart" role="img" aria-label="Chart"></svg></div>
+    <p class="cap" id="chartCap"></p>
+  </section>
+
+  <section class="card" id="layersCard">
+    <div class="cardhead">
+      <h2>The two artworks</h2>
+      <div class="row" style="margin:0">
+        <span class="seg" role="radiogroup" aria-label="Artwork scale">
+          <label><input type="radio" name="artScale" value="same" checked><span>True scale</span></label>
+          <label><input type="radio" name="artScale" value="fill"><span>Fill</span></label>
+        </span>
+        <label class="hint" style="white-space:nowrap"><input id="mirror" type="checkbox"> Mirror B</label>
       </div>
-      <div class="prose">
-        <h3>Away from the axis</h3>
-        <p>Outer rays hit the surface more steeply and bend more (spherical aberration), so the scale is not constant. It also differs across the rings (m<sub>r</sub>) and along them (m<sub>t</sub>). A uniformly scaled B matches only around one radius. A pre-distorted B follows the exact radial map, so it matches everywhere, but strictly only for the design eye.</p>
-        <p>At some radius the map folds back on itself: two front points see the same back point. Beyond that, no B can match A.</p>
-      </div>
-      <div class="prose">
-        <h3>Moiré</h3>
-        <p>Two gratings of pitch p₁ and p₂ at an angle Δθ beat with period</p>
-        <div class="formula">M = p₁p₂ / √(p₁² + p₂² − 2p₁p₂ cos Δθ)</div>
-        <p>For a small detune ε, M ≈ p / ε; for a small rotation, M ≈ p / Δθ (radians). Fringes magnify any relative slip between the layers by M / p, which is why they sweep across the sphere when you move your head.</p>
-        <canvas id="beat" width="640" height="96" aria-label="Beat between the two gratings at the centre"></canvas>
-        <div class="beatlbl"><span>top: A, middle: B as seen, bottom: both</span><span id="beatInfo"></span></div>
-      </div>
+    </div>
+    <div class="pair">
+      <div class="art"><div class="fit"><canvas id="artA" width="300" height="300" aria-label="Artwork A"></canvas></div><div class="artcap" id="capA"></div></div>
+      <div class="art"><div class="fit"><canvas id="artB" width="300" height="300" aria-label="Artwork B"></canvas></div><div class="artcap" id="capB"></div></div>
     </div>
   </section>
 
-  <section class="card prose" style="max-width:none">
-    <h2>Workflow for the two artworks</h2>
-    <ol class="steps">
-      <li>Set R, n and the back plane c to match your piece, and check the section.</li>
-      <li>Put the eye at the typical viewing distance, on axis, and tick “Lock design eye”.</li>
-      <li>Draw pattern A flat with pitch p. It is wrapped onto the front by straight projection along the axis (artwork x, y = surface x, y). If you measure along the curved surface instead, convert with r = R · sin(s / R).</li>
-      <li>Choose the fringe size M you want and set ε ≈ p / M, or a rotation Δθ ≈ p / M.</li>
-      <li>Make B: either scale A by k · (1 + ε) with k = m₀ (simple, good near the centre), or warp it with the radial map below (exact). B is given as seen from the front through the glass; mirror it if you print it from behind.</li>
-      <li>Move α and the distance to check how the fringes drift and how sensitive the result is.</li>
-    </ol>
-  </section>
-
-  <section class="card">
-    <h2>Radial map for the back artwork</h2>
-    <p class="hint" id="exportHead"></p>
-    <div class="exportgrid">
-      <div>
-        <h3>Table (CSV)</h3>
-        <textarea id="csv" readonly aria-label="Radial map as CSV"></textarea>
-        <div class="row"><button id="copyCsv" type="button">Copy table</button><span id="copyMsg" class="hint"></span></div>
-        <div class="formula" id="polys" style="font-size:13px"></div>
-      </div>
-      <div>
-        <h3>Python: make B from an image of A</h3>
-        <pre id="py"></pre>
-        <div class="row"><button id="copyPy" type="button">Copy script</button></div>
-      </div>
-    </div>
+  <section class="card" id="statsCard">
+    <div class="cardhead"><h2>Centre of the sphere</h2><span class="hint">on the axis</span></div>
+    <div class="tiles" id="centreTiles"></div>
+    <div class="cardhead" style="margin-top:12px"><h2>Probe ray</h2><span class="hint" id="probeHint"></span></div>
+    <div class="tiles" id="probeTiles"></div>
   </section>
 </main>
+
+<section class="card prose">
+  <h2 style="margin-bottom:8px">How it works</h2>
+  <p>A solid glass sphere, cut by a back plane. Pattern A is printed on the curved front, pattern B on the back. Every line of sight pairs a front point P with a back point Q; the spacing of the Q’s compared with the spacing of the P’s is the scale B must have to line up with A. Detune that scale a little and the mismatch becomes a moiré of controlled size.</p>
+  <div class="concepts">
+    <div>
+      <h3>Line of sight</h3>
+      <p>The ray from the eye meets the front at P, bends toward the surface normal and continues straight through the glass to Q. Ink at P and ink at Q appear on top of each other, so B must carry at Q what A carries at P.</p>
+      <div class="formula">Snell: sin i = n · sin r</div>
+      <p>A sits on the outer surface and is seen without refraction; only B is seen through the glass.</p>
+    </div>
+    <div>
+      <h3>Why B is smaller</h3>
+      <p>The curved front is a converging lens surface. Near the axis the rays head for a point F′ at s′ behind the front vertex, so at the back, an axial distance L = R + c away, all heights shrink by the same factor m₀.</p>
+      <div class="formula" id="fParax"></div>
+      <p>With the plane at F′, m₀ = 0 and B is hugely magnified; behind F′, B appears inverted.</p>
+    </div>
+    <div>
+      <h3>Away from the axis</h3>
+      <p>Outer rays bend more (spherical aberration), so the scale changes with radius and differs across the rings (m<sub>r</sub>) and along them (m<sub>t</sub>). A pre-distorted B follows the exact radial map and matches everywhere, for the design eye. Beyond the fold radius two front points share one back point and nothing can match.</p>
+    </div>
+    <div>
+      <h3>Moiré</h3>
+      <p>Two gratings of pitch p₁ and p₂ at an angle Δθ beat with period</p>
+      <div class="formula">M = p₁p₂ / √(p₁² + p₂² − 2p₁p₂ cos Δθ)</div>
+      <p>Small detune ε: M ≈ p / ε. Small rotation: M ≈ p / Δθ (radians). Fringes magnify any slip between the layers by M / p.</p>
+      <canvas id="beat" width="640" height="96" aria-label="Beat between the two gratings at the centre"></canvas>
+      <div class="beatlbl"><span>top: A, middle: B as seen, bottom: both</span><span id="beatInfo"></span></div>
+    </div>
+    <div>
+      <h3>Pulsing</h3>
+      <p>The scale B needs depends on where the eye is, so with fixed prints the effective detune changes as a visitor moves. Walking toward the sphere changes the scale at every point at once: the fringes open and close, a pulse. Moving sideways makes them slide.</p>
+      <p>To make the piece open up at a chosen spot, design B for that distance with ε = 0 (lock the design eye there). The “Pulse vs distance” chart shows how many fringes appear across the front at each distance: where it touches zero, the field goes uniform, and on both sides rings come back.</p>
+      <p>Breathing, swinging and flowing need a back layer that changes or moves: a motorised disc, a display or a projection behind the glass.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card prose">
+  <h2 style="margin-bottom:8px">Workflow for the two artworks</h2>
+  <ol class="steps">
+    <li>Set R, n and the back plane c to match your piece, and check the section.</li>
+    <li>Put the eye at the typical viewing distance, on axis, and tick “Lock design eye”.</li>
+    <li>Draw A flat with pitch p. It is wrapped onto the front by straight projection along the axis (artwork x, y = surface x, y). If you measure along the curved surface instead, convert with r = R · sin(s / R).</li>
+    <li>Choose the fringe size M and set ε ≈ p / M, or a rotation Δθ ≈ p / M. For a pulse at a chosen distance, use ε = 0 there.</li>
+    <li>Make B: scale A by k · (1 + ε) with k = m₀ (simple, good near the centre), or warp it with the radial map below (exact). “The two artworks” shows both at true size. B is drawn as seen from the front; tick “Mirror B” if you print it from behind.</li>
+    <li>Play “Visitor walks in and out” and “Visitor sways sideways” to check how the effect behaves for real visitors.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2 style="margin-bottom:6px">Radial map for the back artwork</h2>
+  <p class="hint" id="exportHead" style="margin-bottom:10px"></p>
+  <div class="exportgrid">
+    <div>
+      <h3>Table (CSV)</h3>
+      <textarea id="csv" readonly aria-label="Radial map as CSV"></textarea>
+      <div class="row"><button id="copyCsv" type="button">Copy table</button><span id="copyMsg" class="hint"></span></div>
+      <div class="formula" id="polys" style="font-size:13px"></div>
+    </div>
+    <div>
+      <h3>Python: make B from an image of A</h3>
+      <pre id="py"></pre>
+      <div class="row"><button id="copyPy" type="button">Copy script</button></div>
+    </div>
+  </div>
+</section>
+</div>
 </div>
 </div>
 
@@ -325,12 +429,13 @@ const norm = a => { const l = Math.hypot(a[0], a[1], a[2]); return [a[0]/l, a[1]
 // z axis: from the front (viewer side) to the back. Sphere centre at origin.
 function makeCfg(R, cRel, n, inf, Dr, alphaDeg){
   const a = alphaDeg * D2R;
-  const v = [Math.sin(a), 0, Math.cos(a)];       // viewing direction (eye -> sphere)
-  const Ld = R * (1 + Dr);                        // eye to centre
+  const v = [Math.sin(a), 0, Math.cos(a)];
+  const Ld = R * (1 + Dr);
   return { R, c: cRel * R, full: cRel >= 0.9995, n, inf, v,
     E: [-v[0]*Ld, 0, -v[2]*Ld], e1: [Math.cos(a), 0, -Math.sin(a)], alpha: alphaDeg, Dr };
 }
 function frontXmax(cfg){ return (cfg.full || cfg.c >= 0) ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
+function backRadius(cfg){ return cfg.full ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
 function frontPoint(R, x, y){ const r2 = R*R - x*x - y*y; return r2 < 0 ? null : [x, y, -Math.sqrt(r2)]; }
 
 function inside(cfg, P, d){
@@ -384,7 +489,6 @@ function buildLUT(cfgD){
   }
   const L = { rho, ratio, xp, xq, plane, s0, folded,
     rhoMax: rho.length ? rho[rho.length-1] : 0, xpMax: xp.length ? xp[xp.length-1] : 0 };
-  // uniform resample for fast lookup
   const NU = 2048; L.uni = new Float64Array(NU + 1); L.step = L.rhoMax / NU;
   let j = 0;
   for (let i = 0; i <= NU; i++){
@@ -429,47 +533,74 @@ function oddFit(xs, ys){
 
 /* ---------- state ---------- */
 const $ = id => document.getElementById(id);
-const S = { D0r: 6, D0inf: false };
-let wobbleOn = false, wobbleT0 = 0, wobbleOffset = 0;
+const S = { D0r: 6, D0inf: false, tab: 'scale' };
+const AN = { on: false, t0: 0, off: { epsMul: 1, epsAdd: 0, dth: 0, phase: 0, Dmul: 1, alpha: 0 } };
 const dFromT = t => 0.5 * Math.pow(100, t);   // eye distance / R
+const radio = name => document.querySelector(`input[name=${name}]:checked`).value;
 
 function read(){
+  const o = AN.off;
   S.R = Math.min(2000, Math.max(5, +$('R').value || 100));
   S.c = +$('c').value; S.n = +$('n').value;
-  S.Dinf = $('Dinf').checked; S.Dr = dFromT(+$('D').value);
-  S.alphaBase = +$('alpha').value; S.alpha = S.alphaBase + wobbleOffset;
+  S.Dinf = $('Dinf').checked; S.DrBase = dFromT(+$('D').value);
+  S.Dr = S.Dinf ? S.DrBase : S.DrBase * o.Dmul;
+  S.alphaBase = +$('alpha').value; S.alpha = S.alphaBase + o.alpha;
   S.rays = +$('rays').value; S.probe = +$('probe').value;
   S.pat = $('pat').value; S.p = +$('p').value; S.duty = +$('duty').value; S.th = +$('th').value;
-  S.mode = document.querySelector('input[name=mode]:checked').value;
+  S.mode = radio('mode');
   S.k = +$('k').value; if (Math.abs(S.k) < 0.01) S.k = 0.01 * (Math.sign(S.k) || 1);
-  S.eps = +$('eps').value / 100; S.dth = +$('dth').value;
+  S.epsBase = +$('eps').value / 100; S.eps = S.epsBase * o.epsMul + o.epsAdd;
+  S.dthBase = +$('dth').value; S.dth = S.dthBase + o.dth; S.phase = o.phase;
   S.lock = $('lock').checked;
-  S.show = document.querySelector('input[name=show]:checked').value;
-  S.ink = document.querySelector('input[name=ink]:checked').value;
+  S.show = radio('show'); S.ink = radio('ink');
   S.zoom = +$('zoom').value; S.q = +$('q').value;
+  S.artScale = radio('artScale'); S.mirror = $('mirror').checked;
 }
 const f1 = (x, d = 1) => !isFinite(x) ? (x > 0 ? '∞' : '−∞') : x.toFixed(d).replace('-', '−');
 const mm = (x, d = 1) => f1(x, d) + ' mm';
+const pct = (x, d = 1) => (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(d) + ' %';
 
 let cfg, cfgD, par, parD, LUT;
+function designEye(){ return S.lock ? { Dr: S.D0r, inf: S.D0inf } : { Dr: S.DrBase, inf: S.Dinf }; }
 function compute(){
   read();
   cfg = makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha);
-  const D0r = S.lock ? S.D0r : S.Dr, D0inf = S.lock ? S.D0inf : S.Dinf;
-  cfgD = makeCfg(S.R, S.c, S.n, D0inf, D0r, 0);
+  const de = designEye();
+  cfgD = makeCfg(S.R, S.c, S.n, de.inf, de.Dr, 0);
   par = paraxial(S.R, S.c, S.n, S.Dinf, S.Dr);
-  parD = paraxial(S.R, S.c, S.n, D0inf, D0r);
+  parD = paraxial(S.R, S.c, S.n, de.inf, de.Dr);
   LUT = buildLUT(cfgD);
 }
 
-// pattern coordinate of a back point (in "A units")
+/* ---------- patterns ---------- */
+function inkFn(type, p, duty, thDeg, phase){
+  const cs = Math.cos(thDeg*D2R), sn = Math.sin(thDeg*D2R), ph = phase || 0;
+  if (type === 'lines') return (x, y) => { const u = (x*cs + y*sn) / p + ph; return u - Math.floor(u) < duty; };
+  if (type === 'rings') return (x, y) => { const u = Math.hypot(x, y) / p - ph; return u - Math.floor(u) < duty; };
+  if (type === 'dots'){ const r2 = duty / Math.PI;
+    return (x, y) => { const u = (x*cs + y*sn)/p + ph, v = (-x*sn + y*cs)/p; const a = u - Math.round(u), b = v - Math.round(v); return a*a + b*b < r2; }; }
+  const ns = Math.max(8, Math.round(Math.PI * S.R / p));
+  return (x, y) => { const u = (Math.atan2(y, x) + Math.PI*2 + thDeg*D2R) / (Math.PI*2) * ns + ph; return u - Math.floor(u) < duty; };
+}
+// B as printed: returns 1 ink, 0 clear, -1 no match possible. (x, y) on the back, seen from the front.
+function makeBackSampler(){
+  const ink = inkFn(S.pat, S.p, S.duty, S.th + S.dth, S.phase);
+  if (S.mode === 'uniform'){ const s = S.k * (1 + S.eps); return (x, y) => ink(x/s, y/s) ? 1 : 0; }
+  const L = LUT, stp = L.step, uni = L.uni, rmax = L.rhoMax, NU = uni.length - 1, e = 1 + S.eps;
+  return (x, y) => {
+    const a = Math.hypot(x, y);
+    if (!(rmax > 0) || a > rmax) return -1;
+    const uu = a / stp, i = Math.min(NU - 1, Math.floor(uu)), ra = uni[i] + (uu - i)*(uni[i+1] - uni[i]);
+    return ink(x*ra/e, y*ra/e) ? 1 : 0;
+  };
+}
+// back-pattern coordinate in A units (for derivatives)
 function backCoord(Qx, Qy){
   if (S.mode === 'uniform'){ const s = S.k * (1 + S.eps); return [Qx / s, Qy / s]; }
   const ra = lutRatio(LUT, Math.hypot(Qx, Qy));
   if (ra !== ra) return null;
   return [Qx * ra / (1 + S.eps), Qy * ra / (1 + S.eps)];
 }
-// local derivative of back-pattern coordinate w.r.t. front coordinate (scaled so 1 = perfect match)
 function sampleAt(x){
   const R = cfg.R, h = 1e-4 * R;
   const r0 = traceFromP(cfg, frontPoint(R, x, 0)),
@@ -481,7 +612,6 @@ function sampleAt(x){
   const bp = backCoord(rp.Q[0], rp.Q[1]), bm = backCoord(rm.Q[0], rm.Q[1]), by = backCoord(ry.Q[0], ry.Q[1]);
   let Jr = NaN, Jt = NaN;
   if (bp && bm && by){ Jr = (bp[0] - bm[0]) / (2*h); Jt = by[1] / h; }
-  // apparent pitch of B in front units = p / |J|
   const Mr = isFinite(Jr) ? moire(S.p, S.p / Math.abs(Jr), S.dth) : NaN;
   const Mt = isFinite(Jt) ? moire(S.p, S.p / Math.abs(Jt), S.dth) : NaN;
   return { r0, mr, mt, Jr, Jt, Mr, Mt };
@@ -493,17 +623,15 @@ function drawSection(){
   const R = cfg.R, s = 212 / R, cx = 320, cy = 282;
   SEC.s = s; SEC.cx = cx; SEC.cy = cy;
   const X = x => (cx + x*s).toFixed(1), Y = z => (cy - z*s).toFixed(1);
-  const c = cfg.c, full = cfg.full, w = full ? 0 : Math.sqrt(Math.max(0, R*R - c*c));
+  const c = cfg.c, full = cfg.full, w = full ? 0 : backRadius(cfg);
   let g = `<defs><radialGradient id="gl" cx="0.42" cy="0.45" r="0.7">
     <stop offset="0" style="stop-color:var(--glassA)"/><stop offset="1" style="stop-color:var(--glassB)"/></radialGradient></defs>`;
   if (full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="url(#gl)" stroke="var(--ink)" stroke-opacity=".55"/>`;
   else g += `<path d="M${X(-w)} ${Y(c)} A${R*s} ${R*s} 0 ${c > 0 ? 1 : 0} 0 ${X(w)} ${Y(c)} Z" fill="url(#gl)" stroke="var(--ink)" stroke-opacity=".55"/>`;
   if (!full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="none" stroke="var(--ink)" stroke-opacity=".18" stroke-dasharray="3 5"/>`;
-  // axis & centre
   g += `<line x1="${cx}" y1="8" x2="${cx}" y2="592" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="8 4 2 4"/>`;
   g += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--ink)"/><text x="${cx+6}" y="${cy-6}" class="lbl">C</text>`;
 
-  // rays
   const xmax = frontXmax(cfg), N = S.rays;
   let out = '', ins = '', marks = '';
   for (let i = 0; i < N; i++){
@@ -517,14 +645,12 @@ function drawSection(){
   g += `<g stroke="var(--rayout)" stroke-width="1" stroke-opacity=".9">${out}</g>`;
   g += `<g stroke="var(--rayin)" stroke-width="1.2">${ins}</g>`;
 
-  // paraxial focus
   const zF = -R + par.s;
   if (isFinite(par.s) && par.s > 0 && zF < 1.25*R){
     g += `<g stroke="var(--rayin)" stroke-width="2"><line x1="${cx-6}" y1="${+Y(zF)-6}" x2="${cx+6}" y2="${+Y(zF)+6}"/><line x1="${cx-6}" y1="${+Y(zF)+6}" x2="${cx+6}" y2="${+Y(zF)-6}"/></g>
       <text x="${cx+10}" y="${+Y(zF)+4}" class="lblk">F′</text>`;
   }
 
-  // probe
   const px = S.probe * 0.995 * xmax;
   const pr = traceFromP(cfg, frontPoint(R, px, 0));
   if (pr){
@@ -540,18 +666,16 @@ function drawSection(){
   }
   g += marks;
 
-  // plane
   if (!full){
     g += `<line x1="${X(-w)}" y1="${Y(c)}" x2="${X(w)}" y2="${Y(c)}" stroke="var(--back)" stroke-width="3"/>`;
     g += `<circle cx="${X(w)}" cy="${Y(c)}" r="6" fill="var(--panel)" stroke="var(--back)" stroke-width="2"/>`;
-    g += `<line id="planeHit" x1="${+X(-w)-10}" y1="${Y(c)}" x2="${+X(w)+16}" y2="${Y(c)}" stroke="transparent" stroke-width="20" style="cursor:ns-resize"/>`;
-    g += `<text x="${cx}" y="${+Y(c) - 10}" text-anchor="middle" class="lblk">back plane, pattern B (c = ${(S.c).toFixed(2)} R)</text>`;
+    g += `<line x1="${+X(-w)-10}" y1="${Y(c)}" x2="${+X(w)+16}" y2="${Y(c)}" stroke="transparent" stroke-width="20" style="cursor:ns-resize"/>`;
+    g += `<text x="${cx}" y="${+Y(c) - 10}" text-anchor="middle" class="lblk">back plane, pattern B (c = ${S.c.toFixed(2)} R)</text>`;
   } else {
     g += `<text x="${cx}" y="${+Y(R) - 10}" text-anchor="middle" class="lblk">full sphere, pattern B on the back half</text>`;
   }
   g += `<text x="${cx}" y="${+Y(-R) + 22}" text-anchor="middle" class="lblk">front surface, pattern A</text>`;
 
-  // dimension L
   const zTop = full ? R : c, xd = +X(R) + 26;
   g += `<g stroke="var(--muted)"><line x1="${xd}" y1="${Y(-R)}" x2="${xd}" y2="${Y(zTop)}"/>
     <line x1="${xd-5}" y1="${Y(-R)}" x2="${xd+5}" y2="${Y(-R)}"/><line x1="${xd-5}" y1="${Y(zTop)}" x2="${xd+5}" y2="${Y(zTop)}"/></g>
@@ -561,7 +685,6 @@ function drawSection(){
   $('sec').innerHTML = g;
 }
 
-/* section interaction */
 let drag = null;
 function svgPt(ev){
   const svg = $('sec'), pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
@@ -569,8 +692,7 @@ function svgPt(ev){
 }
 $('sec').addEventListener('pointerdown', ev => {
   const p = svgPt(ev), zc = (SEC.cy - p.y) / SEC.s / S.R;
-  const onPlane = !cfg.full && Math.abs(zc - S.c) * SEC.s * S.R < 12;
-  drag = onPlane ? 'plane' : 'probe';
+  drag = (!cfg.full && Math.abs(zc - S.c) * SEC.s * S.R < 12) ? 'plane' : 'probe';
   $('sec').setPointerCapture(ev.pointerId);
   moveDrag(p);
 });
@@ -590,26 +712,15 @@ function moveDrag(p){
 }
 
 /* ---------- simulated view ---------- */
-function inkFn(type, p, duty, thDeg){
-  const cs = Math.cos(thDeg*D2R), sn = Math.sin(thDeg*D2R);
-  if (type === 'lines') return (x, y) => { const u = (x*cs + y*sn) / p; return u - Math.floor(u) < duty; };
-  if (type === 'rings') return (x, y) => { const u = Math.hypot(x, y) / p; return u - Math.floor(u) < duty; };
-  if (type === 'dots'){ const r2 = duty / Math.PI;
-    return (x, y) => { const u = (x*cs + y*sn)/p, v = (-x*sn + y*cs)/p; const a = u - Math.round(u), b = v - Math.round(v); return a*a + b*b < r2; }; }
-  const ns = Math.max(8, Math.round(Math.PI * S.R / p));
-  return (x, y) => { const u = (Math.atan2(y, x) + Math.PI*2 + thDeg*D2R) / (Math.PI*2) * ns; return u - Math.floor(u) < duty; };
-}
 const vctx = $('view').getContext('2d');
 function renderView(q){
   const cvs = $('view'), Np = cvs.width, img = vctx.createImageData(Np, Np), data = img.data;
   const R = cfg.R, Rsq = R*R, eta = 1/cfg.n, cpl = cfg.c, full = cfg.full;
   const H = R * 1.04 / S.zoom, v = cfg.v, e1 = cfg.e1, E = cfg.E, inf = cfg.inf;
   const showF = S.show !== 'back', showB = S.show !== 'front';
-  const inkA = inkFn(S.pat, S.p, S.duty, S.th), inkB = inkFn(S.pat, S.p, S.duty, S.th + S.dth);
+  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0), back = makeBackSampler();
   const FI = S.ink === 'mono' ? [0.07, 0.07, 0.08] : [0.16, 0.36, 0.98];
   const BI = S.ink === 'mono' ? [0.07, 0.07, 0.08] : [0.98, 0.22, 0.58];
-  const uni = S.mode === 'uniform', sU = S.k * (1 + S.eps), e1p = 1 + S.eps;
-  const stp = LUT.step, uniT = LUT.uni, rmax = LUT.rhoMax, NU = uniT.length - 1;
   const inv = 1 / (q*q);
   for (let py = 0; py < Np; py++){
     for (let px = 0; px < Np; px++){
@@ -640,16 +751,9 @@ function renderView(q){
         if (!full && !onPlane){ r *= 0.72; g *= 0.74; b *= 0.76; }
         if (showF && inkA(Px, Py)){ r *= FI[0]; g *= FI[1]; b *= FI[2]; }
         if (showB){
-          let bx, by, ok = true;
-          if (uni){ bx = Qx / sU; by = Qy / sU; }
-          else {
-            const a = Math.hypot(Qx, Qy);
-            if (a > rmax || !(rmax > 0)) ok = false;
-            else { const uu = a / stp, i = Math.min(NU - 1, Math.floor(uu)); const ra = uniT[i] + (uu - i)*(uniT[i+1] - uniT[i]);
-              bx = Qx*ra/e1p; by = Qy*ra/e1p; }
-          }
-          if (!ok){ r = r*1.25 + 0.05; g *= 0.75; b *= 0.75; }
-          else if (inkB(bx, by)){ r *= BI[0]; g *= BI[1]; b *= BI[2]; }
+          const val = back(Qx, Qy);
+          if (val < 0){ r = r*1.08 + 0.03; g *= 0.86; b *= 0.86; }
+          else if (val){ r *= BI[0]; g *= BI[1]; b *= BI[2]; }
         }
         cr += r; cg += g; cb += b;
       }
@@ -658,10 +762,9 @@ function renderView(q){
     }
   }
   vctx.putImageData(img, 0, 0);
-  // overlays: section line and probe point
-  const toPx = u => (u / H + 1) / 2 * Np;
+  const toPx = u => (u / H + 1) / 2 * Np, k = Np / 420;
   vctx.save();
-  vctx.setLineDash([6, 5]); vctx.strokeStyle = 'rgba(255,210,63,.55)'; vctx.lineWidth = 1;
+  vctx.setLineDash([6*k, 5*k]); vctx.strokeStyle = 'rgba(255,210,63,.55)'; vctx.lineWidth = Math.max(1, k);
   vctx.beginPath(); vctx.moveTo(0, Np/2); vctx.lineTo(Np, Np/2); vctx.stroke();
   const xmax = frontXmax(cfg), P = frontPoint(R, S.probe*0.995*xmax, 0);
   if (P){
@@ -669,10 +772,68 @@ function renderView(q){
     if (inf) u = dot(P, e1);
     else { const dP = [P[0]-E[0], P[1]-E[1], P[2]-E[2]], lam = -dot(E, v) / dot(dP, v);
       u = dot([E[0] + lam*dP[0], 0, E[2] + lam*dP[2]], e1); }
-    vctx.setLineDash([]); vctx.strokeStyle = '#ffd23f'; vctx.lineWidth = 2;
-    vctx.beginPath(); vctx.arc(toPx(u), Np/2, 7, 0, Math.PI*2); vctx.stroke();
+    vctx.setLineDash([]); vctx.strokeStyle = '#ffd23f'; vctx.lineWidth = 2*k;
+    vctx.beginPath(); vctx.arc(toPx(u), Np/2, 7*k, 0, Math.PI*2); vctx.stroke();
   }
   vctx.restore();
+}
+
+/* ---------- the two artworks ---------- */
+function niceLen(maxLen){
+  const c = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
+  let best = 1; for (const v of c) if (v <= maxLen) best = v; return best;
+}
+function drawArt(cv, ext, discR, f, limitR, label){
+  const N = cv.width, ctx = cv.getContext('2d'), img = ctx.createImageData(N, N), d = img.data;
+  const q = 2, inv = 1/(q*q), hatch = ext * 0.035;
+  for (let py = 0; py < N; py++){
+    for (let px = 0; px < N; px++){
+      let acc0 = 0, acc1 = 0, acc2 = 0;
+      for (let sy = 0; sy < q; sy++) for (let sx = 0; sx < q; sx++){
+        const x = ((px + (sx + 0.5)/q) / N * 2 - 1) * ext, y = (1 - (py + (sy + 0.5)/q) / N * 2) * ext;
+        if (x*x + y*y > discR*discR){ acc0 += 222; acc1 += 226; acc2 += 231; continue; }
+        const v = f(x, y);
+        if (v < 0){ const hh = ((x + y) / hatch) - Math.floor((x + y) / hatch) < 0.5; acc0 += hh ? 236 : 249; acc1 += hh ? 176 : 222; acc2 += hh ? 176 : 222; }
+        else if (v){ acc0 += 22; acc1 += 24; acc2 += 28; }
+        else { acc0 += 252; acc1 += 252; acc2 += 250; }
+      }
+      const o = (py*N + px)*4;
+      d[o] = acc0*inv; d[o+1] = acc1*inv; d[o+2] = acc2*inv; d[o+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  const k = N / Math.max(1, cv.clientWidth || N), toP = mmv => (mmv / ext + 1) / 2 * N, sc = N / (2*ext);
+  ctx.save();
+  ctx.strokeStyle = '#4a525b'; ctx.lineWidth = 1.2*k;
+  ctx.beginPath(); ctx.arc(N/2, N/2, discR*sc, 0, Math.PI*2); ctx.stroke();
+  if (limitR && limitR < discR*0.999){
+    ctx.setLineDash([6*k, 4*k]); ctx.strokeStyle = '#c62828'; ctx.lineWidth = 1.5*k;
+    ctx.beginPath(); ctx.arc(N/2, N/2, limitR*sc, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.strokeStyle = 'rgba(42,91,215,.8)'; ctx.lineWidth = 1*k;
+  ctx.beginPath(); ctx.moveTo(N/2 - 7*k, N/2); ctx.lineTo(N/2 + 7*k, N/2); ctx.moveTo(N/2, N/2 - 7*k); ctx.lineTo(N/2, N/2 + 7*k); ctx.stroke();
+  const L = niceLen(ext * 0.55), x0 = 10*k, y0 = N - 12*k;
+  ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(x0 - 4*k, y0 - 22*k, L*sc + 8*k, 28*k);
+  ctx.strokeStyle = '#17202a'; ctx.lineWidth = 2*k;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + L*sc, y0); ctx.moveTo(x0, y0 - 4*k); ctx.lineTo(x0, y0 + 2*k); ctx.moveTo(x0 + L*sc, y0 - 4*k); ctx.lineTo(x0 + L*sc, y0 + 2*k); ctx.stroke();
+  ctx.fillStyle = '#17202a'; ctx.font = `${12*k}px "IBM Plex Sans", system-ui, sans-serif`;
+  ctx.fillText(`${L} mm`, x0, y0 - 8*k);
+  ctx.font = `600 ${15*k}px "IBM Plex Sans", system-ui, sans-serif`;
+  ctx.fillText(label, 10*k, 20*k);
+  ctx.restore();
+}
+function renderArt(){
+  const R = S.R, xA = frontXmax(cfg), wB = backRadius(cfg);
+  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0), back = makeBackSampler();
+  const same = S.artScale === 'same', extS = Math.max(xA, wB) * 1.06;
+  drawArt($('artA'), same ? extS : xA * 1.06, xA, (x, y) => inkA(x, y) ? 1 : 0, LUT.xpMax, 'A');
+  const fB = S.mirror ? (x, y) => back(-x, y) : back;
+  drawArt($('artB'), same ? extS : wB * 1.06, wB, fB, S.mode === 'warp' ? LUT.rhoMax : null, 'B');
+  const pb = S.mode === 'uniform' ? S.p * Math.abs(S.k) * (1 + S.eps) : S.p * Math.abs(parD.m0) * (1 + S.eps);
+  $('capA').innerHTML = `<b>Front</b>, Ø ${mm(2*xA, 0)}, pitch ${mm(S.p, 1)}, axial projection`;
+  $('capA').title = 'Artwork A, wrapped onto the front by projection along the axis. Red dashed circle: beyond it B cannot match.';
+  $('capB').innerHTML = `<b>Back</b>, Ø ${mm(2*wB, 0)}, centre pitch ${mm(pb, 2)}${S.mirror ? ', mirrored' : ', seen from front'}`;
+  $('capB').title = cfg.full ? 'Artwork B on the curved back half, in axial projection.' : 'Artwork B on the back plane. Hatched: no match possible.';
 }
 
 /* ---------- charts ---------- */
@@ -684,20 +845,24 @@ function niceTicks(a, b, n){
   return t;
 }
 function lineChart(el, o){
-  const W = 560, H = 260, ml = 52, mr = 14, mt = 16, mb = 38;
+  const bb = el.getBoundingClientRect();
+  const W = Math.max(280, Math.round(bb.width || 560)), H = Math.max(150, Math.round(bb.height || 260));
+  const ml = o.ylabel ? 64 : 52, mr = 14, mt = 30, mb = 38;
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const sx = x => ml + (x - o.xmin) / (o.xmax - o.xmin) * (W - ml - mr);
   const sy = y => mt + (o.ymax - Math.min(o.ymax, Math.max(o.ymin, y))) / (o.ymax - o.ymin) * (H - mt - mb);
   let g = '';
-  for (const t of niceTicks(o.ymin, o.ymax, 5)){
+  for (const t of niceTicks(o.ymin, o.ymax, Math.max(3, Math.round((H - mt - mb) / 45)))){
     g += `<line x1="${ml}" x2="${W-mr}" y1="${sy(t)}" y2="${sy(t)}" stroke="var(--grid)"/>
       <text x="${ml-6}" y="${sy(t)+4}" text-anchor="end" font-size="11.5" fill="var(--muted)">${o.yfmt ? o.yfmt(t) : f1(t, 2)}</text>`;
   }
-  for (const t of niceTicks(o.xmin, o.xmax, 6)){
+  for (const t of niceTicks(o.xmin, o.xmax, Math.max(3, Math.round((W - ml - mr) / 80)))){
     g += `<line y1="${mt}" y2="${H-mb}" x1="${sx(t)}" x2="${sx(t)}" stroke="var(--grid)"/>
       <text y="${H-mb+16}" x="${sx(t)}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${f1(t, 0)}</text>`;
   }
   g += `<rect x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mt-mb}" fill="none" stroke="var(--rule)"/>`;
   g += `<text x="${(ml + W - mr)/2}" y="${H-4}" text-anchor="middle" font-size="12" fill="var(--muted)">${o.xlabel}</text>`;
+  if (o.ylabel) g += `<text transform="translate(14 ${(mt + H - mb)/2}) rotate(-90)" text-anchor="middle" font-size="12" fill="var(--muted)">${o.ylabel}</text>`;
   for (const h of (o.hlines || [])){
     if (!isFinite(h.y) || h.y < o.ymin || h.y > o.ymax) continue;
     g += `<line x1="${ml}" x2="${W-mr}" y1="${sy(h.y)}" y2="${sy(h.y)}" stroke="${h.color}" stroke-width="1.5" stroke-dasharray="${h.dash || ''}"/>
@@ -711,20 +876,69 @@ function lineChart(el, o){
     }
     g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-dasharray="${s.dash || ''}"/>`;
   }
-  if (o.vline !== undefined) g += `<line x1="${sx(o.vline)}" x2="${sx(o.vline)}" y1="${mt}" y2="${H-mb}" stroke="var(--ink)" stroke-opacity=".5" stroke-dasharray="2 3"/>`;
-  let lx = ml + 8;
+  for (const v of (o.vlines || [])){
+    if (!(v.x >= o.xmin && v.x <= o.xmax)) continue;
+    g += `<line x1="${sx(v.x)}" x2="${sx(v.x)}" y1="${mt}" y2="${H-mb}" stroke="${v.color || 'var(--ink)'}" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="${v.dash || '2 3'}"/>`;
+    if (v.label) g += `<text x="${sx(v.x) + 4}" y="${v.top ? mt + 14 : H - mb - 6}" font-size="11.5" fill="${v.color || 'var(--ink)'}">${v.label}</text>`;
+  }
+  let lx = ml;
   for (const s of o.series){
-    g += `<line x1="${lx}" x2="${lx+18}" y1="${mt+12}" y2="${mt+12}" stroke="${s.color}" stroke-width="2" stroke-dasharray="${s.dash || ''}"/>
-      <text x="${lx+23}" y="${mt+16}" font-size="12" fill="var(--ink)">${s.label}</text>`;
-    lx += 30 + s.label.length * 6.6;
+    g += `<line x1="${lx}" x2="${lx+18}" y1="${mt-12}" y2="${mt-12}" stroke="${s.color}" stroke-width="2" stroke-dasharray="${s.dash || ''}"/>
+      <text x="${lx+23}" y="${mt-8}" font-size="12" fill="var(--ink)">${s.label}</text>`;
+    lx += 34 + s.label.length * 6.6;
   }
   el.innerHTML = g;
+}
+const CAPS = {
+  scale: 'Scale B needs relative to A along the section, for the current eye: m_r across the rings, m_t along them. Where a curve meets the k line, a uniformly scaled B matches A.',
+  moire: 'Local fringe spacing on the front artwork, for the current eye. A flat line means evenly spaced fringes; curves at the top mean near-perfect match.',
+  pulse: 'Fringes across the front at the centre’s fringe spacing, as the visitor’s distance changes (paraxial). Where the curve touches zero the field goes uniform: walking through that distance makes the pattern pulse.'
+};
+function drawChart(samples, Mdes){
+  const el = $('chart'), R = S.R, xmax = frontXmax(cfg), xProbe = S.probe * 0.995 * xmax;
+  if (S.tab === 'scale'){
+    const vals = samples.flatMap(s => s ? [s.mr, s.mt] : []).filter(isFinite);
+    let ymin = Math.min(0, ...vals, S.mode === 'uniform' ? S.k : 0), ymax = Math.max(1, ...vals, S.mode === 'uniform' ? S.k : 0);
+    ymin = Math.max(-2, ymin - 0.05); ymax = Math.min(3, ymax + 0.05);
+    lineChart(el, { xmin: -xmax, xmax, ymin, ymax, xlabel: 'front position x (mm), axial projection', ylabel: 'scale B / A',
+      vlines: [{ x: xProbe, label: 'probe' }],
+      series: [{ pts: samples.map(s => [s.x, s.ok ? s.mr : null]), color: 'var(--c1)', label: 'm_r across rings' },
+               { pts: samples.map(s => [s.x, s.ok ? s.mt : null]), color: 'var(--c2)', label: 'm_t along rings', dash: '6 4' }],
+      hlines: [{ y: parD.m0, color: 'var(--muted)', dash: '2 3', label: 'm₀ design ' + parD.m0.toFixed(3) },
+        ...(S.mode === 'uniform' ? [{ y: S.k, color: 'var(--accent)', label: 'k ' + S.k.toFixed(3) }] : [])] });
+  } else if (S.tab === 'moire'){
+    const yTop = isFinite(Mdes) ? Math.min(4*R, Math.max(3*Mdes, 10*S.p)) : 2*R;
+    lineChart(el, { xmin: -xmax, xmax, ymin: 0, ymax: yTop, xlabel: 'front position x (mm)', ylabel: 'moiré period (mm)', yfmt: t => f1(t, 0),
+      vlines: [{ x: xProbe, label: 'probe' }],
+      series: [{ pts: samples.map(s => [s.x, s.ok ? s.Mr : null]), color: 'var(--c1)', label: 'across rings' },
+               { pts: samples.map(s => [s.x, s.ok ? s.Mt : null]), color: 'var(--c2)', label: 'along rings', dash: '6 4' }],
+      hlines: [{ y: Mdes, color: 'var(--accent)', dash: '2 3', label: 'design ' + mm(Mdes, 0) }] });
+  } else {
+    const de = designEye(), pts = [], Dmin = 1, Dmax = 30;
+    const countAt = m => {
+      const J = S.mode === 'uniform' ? m / (S.k * (1 + S.eps)) : m / (parD.m0 * (1 + S.eps));
+      const M = moire(S.p, S.p / Math.abs(J), S.dth);
+      return isFinite(M) ? 2 * xmax / M : 0;
+    };
+    for (let i = 0; i <= 260; i++){
+      const Dr = Dmin * Math.pow(Dmax / Dmin, i / 260);
+      pts.push([Dr * R, countAt(paraxial(R, S.c, S.n, false, Dr).m0)]);
+    }
+    const far = countAt(paraxial(R, S.c, S.n, true, 1).m0);
+    const ymax = Math.max(2, Math.min(60, Math.max(...pts.map(p => p[1]), far) * 1.1));
+    lineChart(el, { xmin: 0, xmax: Dmax * R, ymin: 0, ymax, xlabel: 'visitor distance to the front (mm)', ylabel: 'fringes across', yfmt: t => f1(t, 0),
+      series: [{ pts, color: 'var(--c3)', label: 'fringes across the front' }],
+      hlines: [{ y: far, color: 'var(--muted)', dash: '2 3', label: 'far away ' + far.toFixed(1) }],
+      vlines: [ ...(S.Dinf ? [] : [{ x: S.Dr * R, label: 'eye now', color: 'var(--accent)', dash: '' }]),
+                ...(de.inf ? [] : [{ x: de.Dr * R, label: 'design', color: 'var(--muted)', top: true }]) ] });
+  }
+  $('chartCap').textContent = CAPS[S.tab];
 }
 
 /* ---------- beat strip ---------- */
 function drawBeat(p2, M){
-  const c = $('beat'), ctx = c.getContext('2d'), W = c.width, H = c.height;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  const c = $('beat'), ctx = c.getContext('2d'), W = c.width;
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, c.height);
   const p1 = S.p, win = isFinite(M) ? Math.min(Math.max(2.2*M, 12*p1), 90*p1) : 30*p1;
   const ppm = W / win, rows = [[2, 28], [34, 60], [66, 94]];
   for (let X = 0; X < W; X++){
@@ -736,103 +950,86 @@ function drawBeat(p2, M){
   $('beatInfo').textContent = `window ${mm(win, 0)}, p₂ = ${mm(p2, 2)}, M = ${mm(M, 0)}`;
 }
 
-/* ---------- readouts, charts, export ---------- */
+/* ---------- numbers ---------- */
+const esc = s => String(s).replace(/"/g, '&quot;');
+const tile = (label, value, note = '', title = '', key = false) =>
+  `<div class="tile${key ? ' key' : ''}" title="${esc(title || (label + ': ' + value.replace(/<[^>]+>/g, '') + (note ? ', ' + note : '')))}"><div class="tl">${label}</div><div class="tv">${value}</div>${note ? `<div class="tn">${note}</div>` : '<div class="tn">&nbsp;</div>'}</div>`;
+
 function updateNumbers(){
   const R = cfg.R, xmax = frontXmax(cfg);
-  // chart samples
-  const NS = 241, pts1r = [], pts1t = [], pts2r = [], pts2t = [];
-  for (let i = 0; i < NS; i++){
-    const x = -0.99*xmax + 1.98*xmax*i/(NS-1), sm = sampleAt(x);
-    pts1r.push([x, sm ? sm.mr : null]); pts1t.push([x, sm ? sm.mt : null]);
-    pts2r.push([x, sm ? sm.Mr : null]); pts2t.push([x, sm ? sm.Mt : null]);
+  const samples = [];
+  for (let i = 0; i < 241; i++){
+    const x = -0.99*xmax + 1.98*xmax*i/240, sm = sampleAt(x);
+    samples.push(sm ? Object.assign({ x, ok: true }, sm) : { x, ok: false });
   }
-  const vals = pts1r.concat(pts1t).map(p => p[1]).filter(v => v !== null && isFinite(v));
-  let ymin = Math.min(0, ...vals, S.mode === 'uniform' ? S.k : 0), ymax = Math.max(1, ...vals, S.mode === 'uniform' ? S.k : 0);
-  ymin = Math.max(-2, ymin - 0.05); ymax = Math.min(3, ymax + 0.05);
-  const xProbe = S.probe * 0.995 * xmax;
-  lineChart($('ch1'), { xmin: -xmax, xmax, ymin, ymax, xlabel: 'front position x (mm), axial projection', vline: xProbe,
-    series: [{ pts: pts1r, color: 'var(--c1)', label: 'm_r radial' }, { pts: pts1t, color: 'var(--c2)', label: 'm_t tangential', dash: '6 4' }],
-    hlines: [{ y: parD.m0, color: 'var(--muted)', dash: '2 3', label: 'm₀ design ' + parD.m0.toFixed(3) },
-      ...(S.mode === 'uniform' ? [{ y: S.k, color: 'var(--accent)', label: 'k ' + S.k.toFixed(3) }] : [])] });
-
-  // centre
   const c0 = sampleAt(0);
   const p2c = c0 && isFinite(c0.Jr) ? S.p / Math.abs(c0.Jr) : NaN;
   const M0 = c0 ? c0.Mr : NaN;
   const p2d = S.mode === 'uniform' ? S.p * S.k * (1 + S.eps) / parD.m0 : S.p * (1 + S.eps);
   const Mdes = moire(S.p, Math.abs(p2d), S.dth);
-  const yTop = isFinite(Mdes) ? Math.min(4*R, Math.max(3*Mdes, 10*S.p)) : 2*R;
-  lineChart($('ch2'), { xmin: -xmax, xmax, ymin: 0, ymax: yTop, xlabel: 'front position x (mm)', vline: xProbe,
-    yfmt: t => f1(t, 0),
-    series: [{ pts: pts2r, color: 'var(--c1)', label: 'across rings' }, { pts: pts2t, color: 'var(--c2)', label: 'along rings', dash: '6 4' }],
-    hlines: [{ y: Mdes, color: 'var(--accent)', dash: '2 3', label: 'design ' + mm(Mdes, 0) }] });
+  drawChart(samples, Mdes);
   drawBeat(isFinite(p2c) ? p2c : S.p, M0);
 
-  // drift: sway eye by ±0.5° with the front point fixed at the vertex
+  // drift: sway the eye by ±0.5° with the front point fixed at the vertex
   const Pv = [0, 0, -R];
-  const ca = makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha + 0.5), cb = makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha - 0.5);
-  const ra = traceFromP(ca, Pv), rb = traceFromP(cb, Pv);
-  let driftTxt = '—', driftSub = '';
+  const ra = traceFromP(makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha + 0.5), Pv),
+        rb = traceFromP(makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha - 0.5), Pv);
+  let driftV = '—', driftN = '';
   if (ra && rb && c0 && isFinite(c0.Jr)){
     const ba = backCoord(ra.Q[0], ra.Q[1]), bb2 = backCoord(rb.Q[0], rb.Q[1]);
     if (ba && bb2){
-      const db = ba[0] - bb2[0];                      // back-pattern shift per degree, in A units
-      const slip = db / Math.abs(c0.Jr);              // same, as an apparent shift on the front (mm)
+      const db = ba[0] - bb2[0], slip = Math.abs(db / c0.Jr);
       if (isFinite(M0)){
-        const fr = Math.abs(db) * M0 / S.p;           // fringes amplify the slip by M / p
-        driftTxt = mm(fr, 1) + ' per 1°';
-        if (!S.Dinf){ const deg = 10 / (R * (1 + S.Dr)) / D2R; driftSub = `${mm(fr*deg, 1)} per 10 mm of head movement`; }
-        driftSub += (driftSub ? '; ' : '') + `layers slip ${mm(Math.abs(slip), 2)} per 1°`;
-      } else { driftTxt = 'no fringes (ε = 0, Δθ = 0)'; driftSub = `layers slip ${mm(Math.abs(slip), 2)} per 1°, field flickers as a whole`; }
+        const fr = Math.abs(db) * M0 / S.p;
+        if (!S.Dinf){ const deg = 10 / (R * (1 + S.Dr)) / D2R; driftV = mm(fr*deg, 1); driftN = 'per 10 mm sideways step'; }
+        else { driftV = mm(fr, 1); driftN = 'per 1° of view angle'; }
+      } else { driftV = 'none'; driftN = `layers slip ${mm(slip, 2)}/°`; }
     }
   }
-  // tolerances on the design
-  const D0r = S.lock ? S.D0r : S.Dr, D0inf = S.lock ? S.D0inf : S.Dinf;
-  const mN = paraxial(S.R, S.c, S.n + 0.01, D0inf, D0r).m0, relN = mN / parD.m0 - 1;
-  const dA = D0inf ? 20 : D0r / 2, dB = D0inf ? 10 : D0r * 2;
+  const de = designEye();
+  const relN = paraxial(S.R, S.c, S.n + 0.01, de.inf, de.Dr).m0 / parD.m0 - 1;
+  const dA = de.inf ? 20 : de.Dr / 2, dB = de.inf ? 10 : de.Dr * 2;
   const mA = paraxial(S.R, S.c, S.n, false, dA).m0 / parD.m0 - 1, mB = paraxial(S.R, S.c, S.n, false, dB).m0 / parD.m0 - 1;
-  const pct = x => (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(1) + ' %';
   const ext = x => Math.abs(x) < 1e-6 ? '∞' : mm(S.p / Math.abs(x), 0);
+  const fV = !isFinite(parD.s) ? '∞' : mm(parD.s, 0);
+  const fN = !isFinite(parD.s) ? 'rays stay parallel' : parD.s < 0 ? 'virtual, rays diverge' :
+    parD.s < parD.L - 1e-6 ? 'inside, before the back' : Math.abs(parD.s - parD.L) < 1e-6 ? 'on the back' : 'beyond the back';
 
-  const foldTxt = LUT.folded ? `${mm(LUT.xpMax, 1)} <small>map folds beyond this</small>` : `${mm(LUT.xpMax, 1)} <small>up to the edge</small>`;
-  const fTxt = !isFinite(parD.s) ? '∞ <small>rays stay parallel</small>' : parD.s < 0 ? `${mm(parD.s, 0)} <small>virtual, rays diverge</small>` :
-    `${mm(parD.s, 0)} <small>${parD.s < parD.L ? 'inside the glass, before the back' : parD.s - parD.L < 1e-6 ? 'on the back' : 'beyond the back'}</small>`;
-  $('centreDL').innerHTML = `
-    <dt>Axial thickness L = R + c</dt><dd>${mm(parD.L, 1)}</dd>
-    <dt>Back plane diameter</dt><dd>${cfg.full ? 'full sphere' : mm(2*Math.sqrt(Math.max(0, R*R - cfg.c*cfg.c)), 1)}</dd>
-    <dt>Paraxial focus F′ from front vertex (design eye)</dt><dd>${fTxt}</dd>
-    <dt>Scale of B at the centre, m₀ (design eye)</dt><dd>${parD.m0.toFixed(4)} <small>${parD.m0 < 0 ? 'inverted, ' : ''}B is ${Math.abs(parD.m0*100).toFixed(1)} % of A</small></dd>
-    <dt>Same, for the current eye (traced)</dt><dd>${c0 ? c0.mr.toFixed(4) : '—'}</dd>
-    <dt>Matchable front radius</dt><dd>${foldTxt}</dd>
-    <dt>Moiré period at the centre, now</dt><dd>${mm(M0, 0)} <small>design: ${mm(Mdes, 0)}</small></dd>
-    <dt>Fringe drift at the centre</dt><dd>${driftTxt}<small>${driftSub}</small></dd>
-    <dt>If n is 0.01 higher</dt><dd>${pct(relN)} <small>extra fringes every ${ext(relN)}</small></dd>
-    <dt>Eye at ${mm(dA*R, 0)} / ${mm(dB*R, 0)}</dt><dd>${pct(mA)} / ${pct(mB)} <small>extra fringes every ${ext(mA)} / ${ext(mB)}</small></dd>`;
+  $('centreTiles').innerHTML =
+    tile('Centre scale m₀', parD.m0.toFixed(3), `B = ${Math.abs(parD.m0*100).toFixed(1)} % of A${parD.m0 < 0 ? ', inverted' : ''}`, 'Scale of B relative to A at the centre, for the design eye (paraxial).', true) +
+    tile('Moiré period', mm(M0, 0), `design ${mm(Mdes, 0)}`, 'Fringe spacing at the centre for the current eye, and for the design eye.', true) +
+    tile('Matchable radius', mm(LUT.xpMax, 0), LUT.folded ? 'map folds beyond' : 'to the edge', 'Front radius up to which a pre-distorted B can match A.') +
+    tile('Scale now', c0 ? c0.mr.toFixed(3) : '—', 'current eye, traced') +
+    tile('Axial thickness L', mm(parD.L, 0), 'L = R + c') +
+    tile('Back plane Ø', cfg.full ? 'full sphere' : mm(2*backRadius(cfg), 0), cfg.full ? 'B on curved back' : `rim at c = ${mm(cfg.c, 0)}`) +
+    tile('Focus F′ from front', fV, fN, 'Paraxial convergence point of the rays inside the glass, design eye.') +
+    tile('Fringe drift', driftV, driftN, 'How far the fringes at the centre move when the visitor moves.') +
+    tile('If n is 0.01 higher', pct(relN, 1), `extra fringes ${ext(relN)}`, 'Change of the centre scale and the resulting spurious fringe spacing.') +
+    tile(`Eye at ½× / 2×`, `${pct(mA, 0)} / ${pct(mB, 0)}`, `${mm(dA*R, 0)} / ${mm(dB*R, 0)}`, 'Change of the centre scale if the eye is at half or double the design distance.');
 
-  // probe
-  const sp = sampleAt(xProbe);
+  const xProbe = S.probe * 0.995 * xmax, sp = sampleAt(xProbe);
+  $('probeHint').textContent = `at x = ${mm(xProbe, 1)}`;
   if (sp){
     const r = sp.r0, i = Math.acos(Math.min(1, r.cosi)) / D2R, rr = Math.acos(Math.min(1, r.cost)) / D2R;
     const arc = R * Math.asin(Math.min(1, Math.abs(r.P[0]) / R)) * Math.sign(r.P[0]);
-    $('probeDL').innerHTML = `
-      <dt>Angle of incidence i / refraction r</dt><dd>${i.toFixed(2)}° / ${rr.toFixed(2)}°</dd>
-      <dt>Front point P: x (axial projection)</dt><dd>${mm(r.P[0], 2)} <small>arc from vertex ${mm(arc, 2)}</small></dd>
-      <dt>Back point Q: x</dt><dd>${mm(r.Q[0], 2)} <small>${r.plane ? 'on the plane' : 'on the curved back'}, z = ${mm(r.Q[2], 1)}</small></dd>
-      <dt>Path length in glass</dt><dd>${mm(Math.hypot(r.Q[0]-r.P[0], r.Q[1]-r.P[1], r.Q[2]-r.P[2]), 1)}</dd>
-      <dt>Local scale m<sub>r</sub> / m<sub>t</sub></dt><dd>${sp.mr.toFixed(4)} / ${sp.mt.toFixed(4)}</dd>
-      <dt>B pitch needed here (exact match)</dt><dd>${mm(S.p*Math.abs(sp.mr), 2)} <small>across, ${mm(S.p*Math.abs(sp.mt), 2)} along</small></dd>
-      <dt>Local moiré period</dt><dd>${mm(sp.Mr, 0)} <small>along rings ${mm(sp.Mt, 0)}</small></dd>`;
+    $('probeTiles').innerHTML =
+      tile('Scale m_r / m_t', `${sp.mr.toFixed(3)} / ${sp.mt.toFixed(3)}`, 'across / along rings', '', true) +
+      tile('B pitch needed', mm(S.p*Math.abs(sp.mr), 2), `along rings ${mm(S.p*Math.abs(sp.mt), 2)}`, 'B pitch for an exact match at this point.', true) +
+      tile('Local moiré', mm(sp.Mr, 0), `along rings ${mm(sp.Mt, 0)}`) +
+      tile('Incidence / refraction', `${i.toFixed(1)}° / ${rr.toFixed(1)}°`, `n = ${S.n.toFixed(3)}`) +
+      tile('Front point P', mm(r.P[0], 1), `arc ${mm(arc, 1)} from vertex`) +
+      tile('Back point Q', mm(r.Q[0], 1), r.plane ? 'on the plane' : 'on the curved back') +
+      tile('Path in glass', mm(Math.hypot(r.Q[0]-r.P[0], r.Q[1]-r.P[1], r.Q[2]-r.P[2]), 1), `z of Q = ${mm(r.Q[2], 0)}`);
   } else {
-    $('probeDL').innerHTML = `<dt>The probe ray misses the glass or this part is not visible from the eye.</dt><dd></dd>`;
+    $('probeTiles').innerHTML = tile('Probe ray', 'not visible', 'misses the glass from this eye');
   }
-
-  updateExport();
+  $('fParax').innerHTML = `n / s′ = (n − 1) / R − 1 / D &nbsp;&nbsp; m₀ = 1 − L / s′<br>now: s′ = ${mm(parD.s, 0)}, L = ${mm(parD.L, 0)}, m₀ = ${parD.m0.toFixed(3)}`;
+  if (!AN.on) updateExport();
 }
 
 function updateExport(){
-  const R = cfgD.R, L = LUT;
-  const D0r = S.lock ? S.D0r : S.Dr, D0inf = S.lock ? S.D0inf : S.Dinf;
-  const eyeTxt = D0inf ? 'far away' : `${(D0r*R).toFixed(0)} mm from the front`;
+  const R = cfgD.R, L = LUT, de = designEye();
+  const eyeTxt = de.inf ? 'far away' : `${(de.Dr*R).toFixed(0)} mm from the front`;
   $('exportHead').textContent = `Design eye on axis, ${eyeTxt}. R = ${R} mm, c = ${(S.c*R).toFixed(1)} mm, n = ${S.n}. Radii are distances from the axis; front radii are in axial projection. A negative back radius means the point lands on the opposite side of the axis (inverted image).`;
   let csv = 'r_front_mm,arc_front_mm,r_back_mm,back_surface,scale_radial,scale_tangential\n';
   if (L.xp.length > 2){
@@ -848,16 +1045,14 @@ function updateExport(){
     }
   }
   $('csv').value = csv;
-
-  // fits
   let A = [1, 0, 0, 0], rbMax = 2*R, fitTxt = '';
   if (S.mode === 'uniform'){
     A = [1 / S.k, 0, 0, 0];
-    fitTxt = `Uniform B: scale A by k · (1 + ε) = ${(S.k*(1+S.eps)).toFixed(4)}${S.dth ? ` and rotate by ${S.dth}°` : ''}.`;
+    fitTxt = `Uniform B: scale A by k · (1 + ε) = ${(S.k*(1+S.epsBase)).toFixed(4)}${S.dthBase ? ` and rotate by ${S.dthBase}°` : ''}.`;
   } else if (L.rho.length > 10){
-    const sub = (arr) => arr.filter((_, i) => i % 3 === 0);
-    const fb = oddFit(sub(L.rho), sub(L.xp).map(v => v * L.s0));       // back radius -> front radius
-    const ff = oddFit(sub(L.xp), sub(L.xq));                             // front radius -> back position
+    const sub = arr => arr.filter((_, i) => i % 3 === 0);
+    const fb = oddFit(sub(L.rho), sub(L.xp).map(v => v * L.s0));
+    const ff = oddFit(sub(L.xp), sub(L.xq));
     if (fb && ff){
       A = fb.co; rbMax = L.rhoMax;
       const e = v => v.toExponential(5).replace('e', ' e');
@@ -878,7 +1073,7 @@ import numpy as np
 from PIL import Image
 
 G = [${A.map(fmtc).join(', ')}]   # r_A = r_B * (G0 + G1 r^2 + G2 r^4 + G3 r^6)
-EPS, DTHETA = ${S.eps.toFixed(4)}, ${S.dth.toFixed(2)}      # detune and rotation for the moire
+EPS, DTHETA = ${S.epsBase.toFixed(4)}, ${S.dthBase.toFixed(2)}      # detune and rotation for the moire
 RB_MAX = ${rbMax.toFixed(2)}                    # no match beyond this back radius
 A_MM, B_MM, PX_PER_MM = ${(2*R).toFixed(0)}.0, ${(2*Math.min(rbMax, R)).toFixed(0)}.0, 20
 
@@ -901,11 +1096,18 @@ Image.fromarray(out.astype(np.uint8)).save("B.png")
 `;
 }
 
-/* ---------- outputs and wiring ---------- */
+/* ---------- outputs ---------- */
+const NOTES = {
+  walk: 'Real with fixed prints: a visitor walking toward and away from the sphere.',
+  sway: 'Real with fixed prints: a visitor stepping sideways.',
+  breathe: 'Detune swells and shrinks: needs a back layer that changes size, such as a display or projection.',
+  rotate: 'Back layer turns back and forth: needs a motorised back disc.',
+  phase: 'Back layer slides and the fringes flow: needs a moving or projected back layer.'
+};
 function updateOutputs(){
   $('cO').textContent = S.c >= 0.9995 ? 'full sphere' : `${S.c.toFixed(3)} (${mm(S.c*S.R, 1)})`;
   $('nO').textContent = S.n.toFixed(3);
-  $('DO').textContent = S.Dinf ? '∞' : `${mm(S.Dr*S.R, 0)} (${S.Dr.toFixed(2)} R)`;
+  $('DO').textContent = S.Dinf ? '∞' : `${mm(S.DrBase*S.R, 0)} (${S.DrBase.toFixed(2)} R)`;
   $('alphaO').textContent = `${f1(S.alphaBase)}°`;
   $('raysO').textContent = S.rays;
   $('probeO').textContent = mm(S.probe * 0.995 * frontXmax(cfg), 1);
@@ -913,57 +1115,117 @@ function updateOutputs(){
   $('dutyO').textContent = Math.round(S.duty*100) + ' %';
   $('thO').textContent = S.th + '°';
   $('kO').textContent = S.k.toFixed(3);
-  $('epsO').textContent = (S.eps >= 0 ? '+' : '−') + Math.abs(S.eps*100).toFixed(1) + ' %';
-  $('dthO').textContent = f1(S.dth) + '°';
+  $('epsO').textContent = pct(S.epsBase, 1);
+  $('dthO').textContent = f1(S.dthBase) + '°';
   $('zoomO').textContent = S.zoom.toFixed(2) + '×';
-  const D0r = S.lock ? S.D0r : S.Dr, D0inf = S.lock ? S.D0inf : S.Dinf;
-  $('designNote').textContent = `B is designed for an eye on the axis, ${D0inf ? 'far away' : mm(D0r*S.R, 0) + ' from the front'}${S.lock ? ' (locked)' : ', following the viewer distance'}.`;
+  const de = designEye();
+  $('designNote').textContent = `B is designed for an eye on the axis, ${de.inf ? 'far away' : mm(de.Dr*S.R, 0) + ' from the front'}${S.lock ? ' (locked)' : ', following the viewer distance'}.`;
   $('k').disabled = S.mode !== 'uniform'; $('kBtn').disabled = S.mode !== 'uniform';
+  $('viewHint').textContent = (S.Dinf ? 'eye far away' : `eye ${mm(S.Dr*S.R, 0)}`) + (Math.abs(S.alpha) > 0.05 ? `, ${f1(S.alpha)}°` : ', on axis');
+  const mode = $('animMode').value, amt = +$('animAmt').value;
+  $('animAmtO').textContent = {
+    walk: `×${Math.pow(2, -1.3*amt).toFixed(2)} to ×${Math.pow(2, 1.3*amt).toFixed(2)}`,
+    sway: `±${(10*amt).toFixed(1)}°`,
+    breathe: Math.abs(S.epsBase) > 1e-4 ? `±${Math.round(amt*100)} % of ε` : `ε ±${(5*amt).toFixed(1)} %`,
+    rotate: `±${(6*amt).toFixed(1)}°`,
+    phase: `${amt.toFixed(2)} pitch / period`
+  }[mode];
+  $('animPerO').textContent = `${$('animPer').value} s`;
+  let note = NOTES[mode];
+  if (mode === 'walk' && S.Dinf) note = 'Untick “Very far” to give the visitor a distance.';
+  $('animNote').textContent = note; $('animNote').title = note;
 }
 
+/* ---------- scheduling ---------- */
 let raf = 0, idle = 0, fastPending = true;
 function schedule(fast){
   fastPending = fast;
-  if (!raf) raf = requestAnimationFrame(frame);
+  if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(fastPending); });
   clearTimeout(idle);
-  if (fast) idle = setTimeout(() => schedule(false), 180);
+  if (fast) idle = setTimeout(() => schedule(false), 200);
 }
-function frame(){
-  raf = 0;
+function frame(fast){
   compute(); updateOutputs(); drawSection(); updateNumbers();
-  renderView(fastPending || wobbleOn ? 1 : S.q);
+  renderView(fast || AN.on ? 1 : S.q);
+  renderArt();
 }
 
-document.querySelectorAll('aside input, aside select').forEach(el => {
+/* ---------- pulse animation ---------- */
+function animOffsets(t){
+  const o = { epsMul: 1, epsAdd: 0, dth: 0, phase: 0, Dmul: 1, alpha: 0 };
+  const amt = +$('animAmt').value, per = +$('animPer').value, w = Math.sin(2*Math.PI*t/per), mode = $('animMode').value;
+  if (mode === 'breathe'){ if (Math.abs(+$('eps').value) > 0.01) o.epsMul = 1 + amt*w; else o.epsAdd = 0.05*amt*w; }
+  else if (mode === 'rotate') o.dth = 6*amt*w;
+  else if (mode === 'phase') o.phase = amt*t/per;
+  else if (mode === 'walk') o.Dmul = Math.pow(2, 1.3*amt*w);
+  else if (mode === 'sway') o.alpha = 10*amt*w;
+  return o;
+}
+function animLoop(now){
+  if (!AN.on) return;
+  AN.off = animOffsets((now - AN.t0) / 1000);
+  frame(true);
+  requestAnimationFrame(animLoop);
+}
+$('play').addEventListener('click', e => {
+  AN.on = !AN.on;
+  e.currentTarget.setAttribute('aria-pressed', AN.on);
+  e.currentTarget.textContent = AN.on ? '■ Stop' : '▶ Pulse';
+  if (AN.on){ AN.t0 = performance.now(); requestAnimationFrame(animLoop); }
+  else { AN.off = { epsMul: 1, epsAdd: 0, dth: 0, phase: 0, Dmul: 1, alpha: 0 }; schedule(false); }
+});
+['animMode', 'animAmt', 'animPer'].forEach(id => $(id).addEventListener('input', () => { if (!AN.on) schedule(true); }));
+
+/* ---------- wiring ---------- */
+document.querySelectorAll('aside input, aside select, #layersCard input').forEach(el => {
   if (el.id === 'nPreset') return;
   el.addEventListener('input', () => schedule(true));
   el.addEventListener('change', () => schedule(false));
 });
 $('nPreset').addEventListener('change', e => { if (e.target.value){ $('n').value = e.target.value; schedule(false); } e.target.value = ''; });
 $('fullBtn').addEventListener('click', () => { $('c').value = 1; schedule(false); });
+$('hemiBtn').addEventListener('click', () => { $('c').value = 0; schedule(false); });
 $('imgBtn').addEventListener('click', () => { $('c').value = 0.79; schedule(false); });
 $('kBtn').addEventListener('click', () => { $('k').value = Math.max(-1.2, Math.min(1.5, parD.m0)).toFixed(3); schedule(false); });
 $('lock').addEventListener('change', e => { if (e.target.checked){ S.D0r = dFromT(+$('D').value); S.D0inf = $('Dinf').checked; } schedule(false); });
-$('wobble').addEventListener('click', e => {
-  wobbleOn = !wobbleOn; e.target.setAttribute('aria-pressed', wobbleOn);
-  e.target.textContent = wobbleOn ? 'Stop swaying' : 'Sway head ±6°';
-  if (wobbleOn){ wobbleT0 = performance.now(); requestAnimationFrame(wobbleLoop); }
-  else { wobbleOffset = 0; schedule(false); }
+$('panelBtn').addEventListener('click', e => {
+  const hidden = document.body.classList.toggle('nopanel');
+  e.currentTarget.setAttribute('aria-pressed', !hidden);
 });
-function wobbleLoop(t){
-  if (!wobbleOn) return;
-  wobbleOffset = 6 * Math.sin((t - wobbleT0) / 3000 * Math.PI * 2);
-  frame();
-  requestAnimationFrame(wobbleLoop);
+document.querySelectorAll('.tabs [role=tab]').forEach(b => b.addEventListener('click', () => {
+  S.tab = b.dataset.tab;
+  document.querySelectorAll('.tabs [role=tab]').forEach(x => x.setAttribute('aria-selected', x === b));
+  schedule(false);
+}));
+async function copyFrom(text, fallbackEl){
+  try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied'; }
+  catch { if (fallbackEl.select) fallbackEl.select(); else { const r = document.createRange(); r.selectNodeContents(fallbackEl); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    $('copyMsg').textContent = 'Selected: press Ctrl/Cmd + C'; }
 }
-async function copyFrom(text, msgEl){
-  try { await navigator.clipboard.writeText(text); if (msgEl) msgEl.textContent = 'Copied'; }
-  catch { $('csv').select(); if (msgEl) msgEl.textContent = 'Selected: press Ctrl/Cmd + C'; }
-}
-$('copyCsv').addEventListener('click', () => copyFrom($('csv').value, $('copyMsg')));
-$('copyPy').addEventListener('click', () => copyFrom($('py').textContent, $('copyMsg')));
+$('copyCsv').addEventListener('click', () => copyFrom($('csv').value, $('csv')));
+$('copyPy').addEventListener('click', () => copyFrom($('py').textContent, $('py')));
 
-// start: k at the paraxial centre value
+// header height drives the one-screen layout
+new ResizeObserver(() => document.documentElement.style.setProperty('--hdr', $('top').offsetHeight + 'px')).observe($('top'));
+
+// canvases and the chart follow the size of their boxes
+const sizeObs = new ResizeObserver(entries => {
+  let dirty = false;
+  for (const e of entries){
+    const cr = e.contentRect, side = Math.floor(Math.min(cr.width, cr.height));
+    if (side < 40) continue;
+    const cv = e.target.querySelector('canvas');
+    if (cv){
+      const px = cv.id === 'view' ? Math.min(680, side) : Math.min(560, Math.round(side * Math.min(2, window.devicePixelRatio || 1)));
+      if (cv.width !== px){ cv.width = px; cv.height = px; dirty = true; }
+    } else dirty = true;
+  }
+  if (dirty && cfg) schedule(false);
+});
+['viewFit', 'chartFit'].forEach(id => sizeObs.observe($(id)));
+document.querySelectorAll('.art .fit').forEach(el => sizeObs.observe(el));
+
+if (window.innerWidth < 900){ document.body.classList.add('nopanel'); $('panelBtn').setAttribute('aria-pressed', 'false'); }
 compute();
 $('k').value = Math.max(-1.2, Math.min(1.5, parD.m0)).toFixed(3);
 schedule(false);
