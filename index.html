@@ -267,24 +267,14 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
   </details>
 
   <details open>
-    <summary>Two planes (classic moiré)</summary>
-    <div class="ctl"><label for="t">Offset t between the layers</label><output id="tO"></output>
-      <input id="t" type="range" min="0.02" max="2" step="0.005" value="1.79"></div>
-    <div class="row"><label><input id="tLink" type="checkbox" checked> Same as the sphere thickness L</label></div>
-    <div class="row seg" role="radiogroup" aria-label="Between the layers">
-      <label><input type="radio" name="gap" value="glass" checked><span>Glass between (n)</span></label>
-      <label><input type="radio" name="gap" value="air"><span>Air between</span></label>
-    </div>
-    <p class="hint">Two flat round layers of diameter 2R, A in front, B behind. Choose “Two planes” or “Compare” at the top.</p>
-  </details>
-
-  <details open>
     <summary>Viewer</summary>
     <div class="ctl"><label for="D">Eye distance to front</label><output id="DO"></output>
       <input id="D" type="range" min="0" max="1" step="0.001" value="0.5396"></div>
     <div class="row"><label><input id="Dinf" type="checkbox"> Very far (parallel rays)</label></div>
     <div class="ctl"><label for="alpha">Viewing angle α</label><output id="alphaO"></output>
       <input id="alpha" type="range" min="-40" max="40" step="0.5" value="0"></div>
+    <div class="row"><label><input id="lock" type="checkbox"> Lock design eye where it is now</label></div>
+    <p class="hint" id="designNote"></p>
   </details>
 
   <details open>
@@ -325,8 +315,6 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
     </select></div>
     <div class="ctl"><label for="bR">B radius (axial projection)</label><output id="bRO"></output>
       <input id="bR" type="range" min="0.05" max="1" step="0.005" value="0.4"></div>
-    <div class="row"><label><input id="lock" type="checkbox"> Lock design eye where it is now</label></div>
-    <p class="hint" id="designNote"></p>
   </details>
 
   <details>
@@ -347,6 +335,18 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
     <div class="ctl"><label for="zoom">View zoom</label><output id="zoomO"></output>
       <input id="zoom" type="range" min="1" max="4" step="0.05" value="1"></div>
     <div class="row"><label for="q">Quality</label><select id="q"><option value="1">Fast</option><option value="2" selected>Good</option><option value="3">Best</option></select></div>
+  </details>
+
+  <details open>
+    <summary>Two planes (classic moiré)</summary>
+    <div class="ctl"><label for="t">Offset t between the layers</label><output id="tO"></output>
+      <input id="t" type="range" min="0.02" max="2" step="0.005" value="1.79"></div>
+    <div class="row"><label><input id="tLink" type="checkbox" checked> Same as the sphere thickness L</label></div>
+    <div class="row seg" role="radiogroup" aria-label="Between the layers">
+      <label><input type="radio" name="gap" value="glass" checked><span>Glass between (n)</span></label>
+      <label><input type="radio" name="gap" value="air"><span>Air between</span></label>
+    </div>
+    <p class="hint">Two flat round layers of diameter 2R, A in front, B behind. Choose “Two planes” or “Compare” at the top.</p>
   </details>
 </aside>
 
