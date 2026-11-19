@@ -163,6 +163,40 @@ i.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:
   .toolbar input[type=range]{width:80px}
   .animNote{flex-basis:100%}
 }
+
+/* ---------- sphere / planes / compare panes ---------- */
+body[data-obj="sphere"] .is-planes, body[data-obj="planes"] .is-sphere{display:none !important}
+body:not([data-obj="compare"]) .tag{display:none}
+.duoWrap{position:relative;width:100%;container:duo / size;min-height:0;aspect-ratio:1;max-height:82vh}
+body[data-obj="compare"] .duoWrap{aspect-ratio:2 / 1}
+.duo{position:absolute;inset:0;display:grid;gap:8px;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+body[data-obj="compare"] .duo{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@container duo (max-aspect-ratio: 1/1){
+  body[data-obj="compare"] .duo{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)}
+}
+.pane{position:relative;min-width:0;min-height:0;container-type:size}
+.pane > svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pane > canvas{position:absolute;inset:0;margin:auto;width:min(100cqw,100cqh);height:min(100cqw,100cqh);display:block;border-radius:6px;background:#000}
+.tag{position:absolute;left:4px;top:2px;z-index:2;font-size:12px;font-weight:600;background:var(--panel);color:var(--ink);padding:1px 7px;border-radius:5px;border:1px solid var(--rule)}
+body[data-obj="compare"] .pair{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cmpwrap{overflow-x:auto}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+.cmp th,.cmp td{padding:4px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--rule)}
+.cmp th:first-child,.cmp td:first-child{text-align:left;color:var(--muted);font-weight:400}
+.cmp thead th{font-weight:600;color:var(--ink);border-bottom:2px solid var(--rule)}
+.cmp td small{color:var(--muted);font-size:11.5px;margin-left:4px}
+.objseg label{padding:4px 10px;font-size:13px}
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+  .duoWrap{aspect-ratio:1;max-height:calc(100vh - var(--hdr) - 110px)}
+  body[data-obj="compare"] .duoWrap{aspect-ratio:1 / 1.6;max-height:none}
+}
+@media (min-width:1200px) and (min-aspect-ratio:16/9){
+  body[data-obj="compare"] .dash{grid-template-rows:minmax(0,1.55fr) minmax(0,1fr);
+    grid-template-areas:"sec sec sec view view view" "charts charts layers layers stats stats"}
+}
+@media (min-width:1200px) and (min-aspect-ratio:3/2){
+  .duoWrap, body[data-obj="compare"] .duoWrap{flex:1 1 0;aspect-ratio:auto;max-height:none;height:auto}
+}
 /* ---------- reading sections ---------- */
 .prose{max-width:none}
 .prose p{margin:0 0 10px;max-width:75ch}
@@ -183,11 +217,16 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 .lblk{font-size:12.5px;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 </style>
 </head>
-<body>
+<body data-obj="sphere">
 <header class="top" id="top">
   <h1>Glass sphere moiré</h1>
-  <div class="toolbar" role="group" aria-label="Pulse animation">
+  <div class="toolbar" role="group" aria-label="Object and pulse animation">
     <button id="panelBtn" type="button" aria-pressed="true" title="Show or hide the parameter panel">Parameters</button>
+    <span class="seg objseg" role="radiogroup" aria-label="Object">
+      <label><input type="radio" name="obj" value="sphere" checked><span>Sphere</span></label>
+      <label><input type="radio" name="obj" value="planes"><span>Two planes</span></label>
+      <label><input type="radio" name="obj" value="compare"><span>Compare</span></label>
+    </span>
     <span class="sep" aria-hidden="true"></span>
     <button id="play" type="button" aria-pressed="false">▶ Pulse</button>
     <select id="animMode" aria-label="Kind of pulse">
@@ -208,7 +247,7 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 <aside class="controls" id="panel" aria-label="Parameters">
   <details open>
     <summary>Glass and cut</summary>
-    <div class="row"><label for="R">Sphere radius R</label><input id="R" type="number" min="5" max="2000" step="1" value="100"> mm</div>
+    <div class="row"><label for="R">Radius R</label><input id="R" type="number" min="5" max="2000" step="1" value="100"> mm <span class="hint">(sheets: same Ø)</span></div>
     <div class="ctl"><label for="c">Back plane position c / R</label><output id="cO"></output>
       <input id="c" type="range" min="-0.6" max="1" step="0.005" value="0.79"></div>
     <div class="row"><button id="fullBtn" type="button">Full sphere</button><button id="hemiBtn" type="button">Hemisphere</button><button id="imgBtn" type="button">Your cut 0.79 R</button></div>
@@ -224,6 +263,18 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
       <option value="1.333">Water-filled thin shell 1.33</option>
       <option value="1">Empty thin shell (air) 1.00</option>
     </select></div>
+  </details>
+
+  <details open>
+    <summary>Two planes (classic moiré)</summary>
+    <div class="ctl"><label for="t">Offset t between the layers</label><output id="tO"></output>
+      <input id="t" type="range" min="0.02" max="2" step="0.005" value="1.79"></div>
+    <div class="row"><label><input id="tLink" type="checkbox" checked> Same as the sphere thickness L</label></div>
+    <div class="row seg" role="radiogroup" aria-label="Between the layers">
+      <label><input type="radio" name="gap" value="glass" checked><span>Glass between (n)</span></label>
+      <label><input type="radio" name="gap" value="air"><span>Air between</span></label>
+    </div>
+    <p class="hint">Two flat round layers of diameter 2R, A in front, B behind. Choose “Two planes” or “Compare” at the top.</p>
   </details>
 
   <details open>
@@ -257,9 +308,9 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
       <label><input type="radio" name="mode" value="uniform"><span>Uniform scale k</span></label>
       <label><input type="radio" name="mode" value="warp" checked><span>Pre-distorted</span></label>
     </div>
+    <div class="row"><label><input id="autoK" type="checkbox" checked> k = centre value m₀ of each object</label></div>
     <div class="ctl"><label for="k">Uniform scale k (B / A)</label><output id="kO"></output>
       <input id="k" type="range" min="-1.2" max="1.5" step="0.001" value="0.6"></div>
-    <div class="row"><button id="kBtn" type="button">Set k to centre value m₀</button></div>
     <div class="ctl"><label for="eps">Detune ε</label><output id="epsO"></output>
       <input id="eps" type="range" min="-15" max="15" step="0.1" value="5"></div>
     <div class="ctl"><label for="dth">Rotation Δθ</label><output id="dthO"></output>
@@ -292,11 +343,14 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 <div class="maincol">
 <main class="dash">
   <section class="card" id="secCard">
-    <div class="cardhead"><h2>Section</h2><span class="hint">Drag the back plane, or drag on the glass to move the probe</span></div>
-    <div class="fit" id="secFit"><svg id="sec" viewBox="0 0 640 600" role="img" aria-label="Section of the sphere with ray paths"></svg></div>
+    <div class="cardhead"><h2>Section</h2><span class="hint">Drag the back layer, or drag on the glass to move the probe</span></div>
+    <div class="duoWrap" id="secWrap"><div class="duo">
+      <div class="pane is-sphere"><span class="tag">Sphere</span><svg id="secS" data-kind="sphere" class="secsvg" viewBox="72 30 528 570" role="img" aria-label="Section of the sphere with ray paths"></svg></div>
+      <div class="pane is-planes"><span class="tag">Two planes</span><svg id="secP" data-kind="planes" class="secsvg" viewBox="72 30 528 570" role="img" aria-label="Section of the two planes with ray paths"></svg></div>
+    </div></div>
     <div class="legend">
       <span><i class="ln" style="background:var(--rayout)"></i>sight line in air</span>
-      <span><i class="ln" style="background:var(--rayin)"></i>inside the glass</span>
+      <span><i class="ln" style="background:var(--rayin)"></i>between the layers</span>
       <span><i class="dot" style="background:var(--front)"></i>P on A, front</span>
       <span><i class="dot" style="background:var(--back)"></i>Q on B, back</span>
     </div>
@@ -304,11 +358,14 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 
   <section class="card" id="viewCard">
     <div class="cardhead"><h2>What the viewer sees</h2><span class="hint" id="viewHint"></span></div>
-    <div class="fit" id="viewFit"><canvas id="view" width="420" height="420" aria-label="Ray-traced view of both patterns"></canvas></div>
+    <div class="duoWrap" id="viewWrap"><div class="duo">
+      <div class="pane is-sphere"><span class="tag">Sphere</span><canvas id="viewS" width="420" height="420" aria-label="Ray-traced view through the sphere"></canvas></div>
+      <div class="pane is-planes"><span class="tag">Two planes</span><canvas id="viewP" width="420" height="420" aria-label="Ray-traced view through the two planes"></canvas></div>
+    </div></div>
     <div class="legend">
       <span><i class="sw" style="background:#9aa0a6"></i>glass</span>
-      <span><i class="sw" style="background:#62676d"></i>sight lands on curved back</span>
-      <span><i class="sw" style="background:#b56a6a"></i>no match possible</span>
+      <span><i class="sw" style="background:#62676d"></i>sight misses the back layer</span>
+      <span><i class="sw" style="background:#a98080"></i>no match possible</span>
       <span><i class="ln" style="background:#ffd23f"></i>section line, probe</span>
     </div>
   </section>
@@ -327,7 +384,7 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 
   <section class="card" id="layersCard">
     <div class="cardhead">
-      <h2>The two artworks</h2>
+      <h2>The artworks</h2>
       <div class="row" style="margin:0">
         <span class="seg" role="radiogroup" aria-label="Artwork scale">
           <label><input type="radio" name="artScale" value="same" checked><span>True scale</span></label>
@@ -338,37 +395,41 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
     </div>
     <div class="pair">
       <div class="art"><div class="fit"><canvas id="artA" width="300" height="300" aria-label="Artwork A"></canvas></div><div class="artcap" id="capA"></div></div>
-      <div class="art"><div class="fit"><canvas id="artB" width="300" height="300" aria-label="Artwork B"></canvas></div><div class="artcap" id="capB"></div></div>
+      <div class="art is-sphere"><div class="fit"><canvas id="artBS" width="300" height="300" aria-label="Artwork B for the sphere"></canvas></div><div class="artcap" id="capBS"></div></div>
+      <div class="art is-planes"><div class="fit"><canvas id="artBP" width="300" height="300" aria-label="Artwork B for the two planes"></canvas></div><div class="artcap" id="capBP"></div></div>
     </div>
   </section>
 
   <section class="card" id="statsCard">
-    <div class="cardhead"><h2>Centre of the sphere</h2><span class="hint">on the axis</span></div>
-    <div class="tiles" id="centreTiles"></div>
-    <div class="cardhead" style="margin-top:12px"><h2>Probe ray</h2><span class="hint" id="probeHint"></span></div>
-    <div class="tiles" id="probeTiles"></div>
+    <div id="statsBody"></div>
   </section>
 </main>
 
 <section class="card prose">
   <h2 style="margin-bottom:8px">How it works</h2>
-  <p>A solid glass sphere, cut by a back plane. Pattern A is printed on the curved front, pattern B on the back. Every line of sight pairs a front point P with a back point Q; the spacing of the Q’s compared with the spacing of the P’s is the scale B must have to line up with A. Detune that scale a little and the mismatch becomes a moiré of controlled size.</p>
+  <p>A glass sphere, cut by a back plane. Pattern A is printed on the curved front, pattern B on the back. Every line of sight pairs a front point P with a back point Q; the spacing of the Q’s compared with the spacing of the P’s is the scale B must have to line up with A. Detune that scale a little and the mismatch becomes a moiré of controlled size. The “Two planes” object is the classic set-up for comparison: two flat layers an offset t apart.</p>
   <div class="concepts">
     <div>
       <h3>Line of sight</h3>
-      <p>The ray from the eye meets the front at P, bends toward the surface normal and continues straight through the glass to Q. Ink at P and ink at Q appear on top of each other, so B must carry at Q what A carries at P.</p>
+      <p>The ray from the eye meets the front at P, bends toward the surface normal and continues straight to Q. Ink at P and ink at Q appear on top of each other, so B must carry at Q what A carries at P.</p>
       <div class="formula">Snell: sin i = n · sin r</div>
       <p>A sits on the outer surface and is seen without refraction; only B is seen through the glass.</p>
     </div>
     <div>
-      <h3>Why B is smaller</h3>
-      <p>The curved front is a converging lens surface. Near the axis the rays head for a point F′ at s′ behind the front vertex, so at the back, an axial distance L = R + c away, all heights shrink by the same factor m₀.</p>
+      <h3>Why B is smaller in the sphere</h3>
+      <p>The curved front is a converging lens surface. Near the axis the rays head for a point F′ at s′ behind the front, so at the back, an axial distance L = R + c away, all heights shrink by the same factor m₀.</p>
       <div class="formula" id="fParax"></div>
       <p>With the plane at F′, m₀ = 0 and B is hugely magnified; behind F′, B appears inverted.</p>
     </div>
     <div>
+      <h3>Classic two-plane moiré</h3>
+      <p>With a flat front there is no lens. The back layer is simply farther from the eye, so B must be slightly larger than A, and almost the same scale everywhere:</p>
+      <div class="formula" id="fPlanes"></div>
+      <p>Glass between the layers makes B look closer (by t / n), which reduces both the size difference and the parallax.</p>
+    </div>
+    <div>
       <h3>Away from the axis</h3>
-      <p>Outer rays bend more (spherical aberration), so the scale changes with radius and differs across the rings (m<sub>r</sub>) and along them (m<sub>t</sub>). A pre-distorted B follows the exact radial map and matches everywhere, for the design eye. Beyond the fold radius two front points share one back point and nothing can match.</p>
+      <p>In the sphere, outer rays bend more (spherical aberration), so the scale changes with radius and differs across the rings (m<sub>r</sub>) and along them (m<sub>t</sub>). A pre-distorted B follows the exact radial map and matches everywhere, for the design eye. Beyond the fold radius two front points share one back point and nothing can match.</p>
     </div>
     <div>
       <h3>Moiré</h3>
@@ -380,9 +441,8 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
     </div>
     <div>
       <h3>Pulsing</h3>
-      <p>The scale B needs depends on where the eye is, so with fixed prints the effective detune changes as a visitor moves. Walking toward the sphere changes the scale at every point at once: the fringes open and close, a pulse. Moving sideways makes them slide.</p>
-      <p>To make the piece open up at a chosen spot, design B for that distance with ε = 0 (lock the design eye there). The “Pulse vs distance” chart shows how many fringes appear across the front at each distance: where it touches zero, the field goes uniform, and on both sides rings come back.</p>
-      <p>Breathing, swinging and flowing need a back layer that changes or moves: a motorised disc, a display or a projection behind the glass.</p>
+      <p>The scale B needs depends on where the eye is, so with fixed prints the effective detune changes as a visitor moves. Walking toward the piece makes the fringes open and close, a pulse; moving sideways makes them slide. To make the field open up at a chosen spot, design B for that distance with ε = 0 (lock the design eye there).</p>
+      <p>Breathing, swinging and flowing need a back layer that changes or moves: a motorised disc, a display or a projection.</p>
     </div>
   </div>
 </section>
@@ -392,10 +452,10 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
   <ol class="steps">
     <li>Set R, n and the back plane c to match your piece, and check the section.</li>
     <li>Put the eye at the typical viewing distance, on axis, and tick “Lock design eye”.</li>
-    <li>Draw A flat with pitch p. It is wrapped onto the front by straight projection along the axis (artwork x, y = surface x, y). If you measure along the curved surface instead, convert with r = R · sin(s / R).</li>
+    <li>Draw A flat with pitch p. On the sphere it is wrapped onto the front by straight projection along the axis (artwork x, y = surface x, y). If you measure along the curved surface instead, convert with r = R · sin(s / R).</li>
     <li>Choose the fringe size M and set ε ≈ p / M, or a rotation Δθ ≈ p / M. For a pulse at a chosen distance, use ε = 0 there.</li>
-    <li>Make B: scale A by k · (1 + ε) with k = m₀ (simple, good near the centre), or warp it with the radial map below (exact). “The two artworks” shows both at true size. B is drawn as seen from the front; tick “Mirror B” if you print it from behind.</li>
-    <li>Play “Visitor walks in and out” and “Visitor sways sideways” to check how the effect behaves for real visitors.</li>
+    <li>Make B: scale A by k · (1 + ε) with k = m₀ (simple, good near the centre), or warp it with the radial map below (exact). B is drawn as seen from the front; tick “Mirror B” if you print it from behind.</li>
+    <li>Use “Compare” to see how the same artwork behaves in the sphere and on two flat layers, and play the visitor animations.</li>
   </ol>
 </section>
 
@@ -419,30 +479,41 @@ svg text{font-family:"IBM Plex Sans",system-ui,sans-serif}
 </div>
 </div>
 </div>
-
 <script>
 /* ---------- geometry and ray tracing ---------- */
 const D2R = Math.PI / 180;
 const dot = (a, b) => a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 const norm = a => { const l = Math.hypot(a[0], a[1], a[2]); return [a[0]/l, a[1]/l, a[2]/l]; };
 
-// z axis: from the front (viewer side) to the back. Sphere centre at origin.
-function makeCfg(R, cRel, n, inf, Dr, alphaDeg){
+// z axis: from the front (viewer side) to the back. Sphere centre at origin; the front vertex
+// (sphere) and the front layer (planes) both sit at z = -R, so eye distances compare directly.
+function makeCfg(kind, R, cRel, n, inf, Dr, alphaDeg, t){
   const a = alphaDeg * D2R;
   const v = [Math.sin(a), 0, Math.cos(a)];
   const Ld = R * (1 + Dr);
-  return { R, c: cRel * R, full: cRel >= 0.9995, n, inf, v,
+  return { kind, R, c: cRel * R, cRel, full: kind === 'sphere' && cRel >= 0.9995, n, inf, v, t, zB: -R + t,
     E: [-v[0]*Ld, 0, -v[2]*Ld], e1: [Math.cos(a), 0, -Math.sin(a)], alpha: alphaDeg, Dr };
 }
-function frontXmax(cfg){ return (cfg.full || cfg.c >= 0) ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
-function backRadius(cfg){ return cfg.full ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
-function frontPoint(R, x, y){ const r2 = R*R - x*x - y*y; return r2 < 0 ? null : [x, y, -Math.sqrt(r2)]; }
-
+function frontXmax(cfg){ return (cfg.kind === 'planes' || cfg.full || cfg.c >= 0) ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
+function backRadius(cfg){ return (cfg.kind === 'planes' || cfg.full) ? cfg.R : Math.sqrt(Math.max(0, cfg.R*cfg.R - cfg.c*cfg.c)); }
+function frontPoint(cfg, x, y){
+  const R = cfg.R;
+  if (cfg.kind === 'planes') return (x*x + y*y <= R*R) ? [x, y, -R] : null;
+  const r2 = R*R - x*x - y*y; return r2 < 0 ? null : [x, y, -Math.sqrt(r2)];
+}
 function inside(cfg, P, d){
+  const eta = 1 / cfg.n;
+  if (cfg.kind === 'planes'){
+    const cosi = d[2]; if (cosi <= 1e-9) return null;
+    const k = 1 - eta*eta*(1 - cosi*cosi); if (k < 0) return null;
+    const cost = Math.sqrt(k), t = [eta*d[0], eta*d[1], cost];
+    const tt = cfg.t / t[2], Q = [P[0] + tt*t[0], P[1] + tt*t[1], cfg.zB];
+    return { P, d, t, Q, plane: Q[0]*Q[0] + Q[1]*Q[1] <= cfg.R*cfg.R, cosi, cost };
+  }
   const R = cfg.R, N = [P[0]/R, P[1]/R, P[2]/R];
   const cosi = -dot(N, d);
   if (cosi <= 1e-9) return null;
-  const eta = 1 / cfg.n, k = 1 - eta*eta*(1 - cosi*cosi);
+  const k = 1 - eta*eta*(1 - cosi*cosi);
   if (k < 0) return null;
   const cost = Math.sqrt(k), f = eta*cosi - cost;
   const t = [eta*d[0] + f*N[0], eta*d[1] + f*N[1], eta*d[2] + f*N[2]];
@@ -456,15 +527,17 @@ function inside(cfg, P, d){
 }
 function traceFromP(cfg, P){
   if (!P) return null;
-  if (!cfg.full && P[2] >= cfg.c) return null;
+  if (cfg.kind === 'sphere' && !cfg.full && P[2] >= cfg.c) return null;
   const d = cfg.inf ? cfg.v : norm([P[0]-cfg.E[0], P[1]-cfg.E[1], P[2]-cfg.E[2]]);
   return inside(cfg, P, d);
 }
-function paraxial(R, cRel, n, inf, Dr){
-  const L = R * (1 + cRel);
-  const inv = (n - 1) / (n * R) - (inf ? 0 : 1 / (n * Dr * R));
+function paraxialK(kind, R, cRel, n, inf, Dr, t){
+  const D = Dr * R, inf2 = inf ? 0 : 1 / (n * D);
+  const L = kind === 'planes' ? t : R * (1 + cRel);
+  const inv = (kind === 'planes' ? 0 : (n - 1) / (n * R)) - inf2;
   return { L, s: Math.abs(inv) < 1e-15 ? Infinity : 1 / inv, m0: 1 - L * inv };
 }
+const paraxial = cfg => paraxialK(cfg.kind, cfg.R, cfg.cRel, cfg.n, cfg.inf, cfg.Dr, cfg.t);
 function moire(p1, p2, dthDeg){
   const th = dthDeg * D2R;
   const den = Math.sqrt(Math.max(0, p1*p1 + p2*p2 - 2*p1*p2*Math.cos(th)));
@@ -478,8 +551,8 @@ function buildLUT(cfgD){
   let s0 = 0, last = -1, folded = false;
   const NS = 1500, thMax = Math.asin(Math.min(1, xmax / R)) * 0.9995;
   for (let i = 1; i <= NS; i++){
-    const x = R * Math.sin(thMax * i / NS);
-    const r = traceFromP(cfgD, frontPoint(R, x, 0));
+    const x = cfgD.kind === 'sphere' ? R * Math.sin(thMax * i / NS) : xmax * 0.9995 * i / NS;
+    const r = traceFromP(cfgD, frontPoint(cfgD, x, 0));
     if (!r) break;
     const q = r.Q[0];
     if (s0 === 0) s0 = Math.sign(q) || 1;
@@ -519,6 +592,7 @@ function oddFit(xs, ys){
   for (let col = 0; col < K; col++){
     let piv = col; for (let r = col+1; r < K; r++) if (Math.abs(A[r][col]) > Math.abs(A[piv][col])) piv = r;
     [A[col], A[piv]] = [A[piv], A[col]]; [b[col], b[piv]] = [b[piv], b[col]];
+    if (Math.abs(A[col][col]) < 1e-14) return null;
     for (let r = 0; r < K; r++){ if (r === col) continue; const f = A[r][col] / A[col][col];
       for (let c = col; c < K; c++) A[r][c] -= f * A[col][c]; b[r] -= f * b[col]; }
   }
@@ -535,19 +609,25 @@ function oddFit(xs, ys){
 const $ = id => document.getElementById(id);
 const S = { D0r: 6, D0inf: false, tab: 'scale' };
 const AN = { on: false, t0: 0, off: { epsMul: 1, epsAdd: 0, dth: 0, phase: 0, Dmul: 1, alpha: 0 } };
-const dFromT = t => 0.5 * Math.pow(100, t);   // eye distance / R
+const dFromT = t => 0.5 * Math.pow(100, t);
 const radio = name => document.querySelector(`input[name=${name}]:checked`).value;
+const NAMES = { sphere: 'Sphere', planes: 'Two planes' };
 
 function read(){
   const o = AN.off;
+  S.object = radio('obj');
   S.R = Math.min(2000, Math.max(5, +$('R').value || 100));
   S.c = +$('c').value; S.n = +$('n').value;
+  S.tLink = $('tLink').checked;
+  if (S.tLink) $('t').value = (1 + S.c).toFixed(3);
+  S.t = Math.max(0.02, +$('t').value) * S.R;
+  S.gapN = radio('gap') === 'glass' ? S.n : 1;
   S.Dinf = $('Dinf').checked; S.DrBase = dFromT(+$('D').value);
   S.Dr = S.Dinf ? S.DrBase : S.DrBase * o.Dmul;
   S.alphaBase = +$('alpha').value; S.alpha = S.alphaBase + o.alpha;
   S.rays = +$('rays').value; S.probe = +$('probe').value;
   S.pat = $('pat').value; S.p = +$('p').value; S.duty = +$('duty').value; S.th = +$('th').value;
-  S.mode = radio('mode');
+  S.mode = radio('mode'); S.autoK = $('autoK').checked;
   S.k = +$('k').value; if (Math.abs(S.k) < 0.01) S.k = 0.01 * (Math.sign(S.k) || 1);
   S.epsBase = +$('eps').value / 100; S.eps = S.epsBase * o.epsMul + o.epsAdd;
   S.dthBase = +$('dth').value; S.dth = S.dthBase + o.dth; S.phase = o.phase;
@@ -558,18 +638,28 @@ function read(){
 }
 const f1 = (x, d = 1) => !isFinite(x) ? (x > 0 ? '∞' : '−∞') : x.toFixed(d).replace('-', '−');
 const mm = (x, d = 1) => f1(x, d) + ' mm';
-const pct = (x, d = 1) => (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(d) + ' %';
+const pct = (x, d = 1) => !isFinite(x) ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(d) + ' %';
 
-let cfg, cfgD, par, parD, LUT;
 function designEye(){ return S.lock ? { Dr: S.D0r, inf: S.D0inf } : { Dr: S.DrBase, inf: S.Dinf }; }
+function makeObj(kind){
+  const de = designEye(), n = kind === 'planes' ? S.gapN : S.n;
+  const mk = (inf, Dr, al) => makeCfg(kind, S.R, S.c, n, inf, Dr, al, S.t);
+  const o = { kind, name: NAMES[kind], cfg: mk(S.Dinf, S.Dr, S.alpha), cfgD: mk(de.inf, de.Dr, 0) };
+  o.par = paraxial(o.cfg); o.parD = paraxial(o.cfgD); o.LUT = buildLUT(o.cfgD);
+  return o;
+}
+let OBJS = [], PRIMARY = null;
 function compute(){
   read();
-  cfg = makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha);
-  const de = designEye();
-  cfgD = makeCfg(S.R, S.c, S.n, de.inf, de.Dr, 0);
-  par = paraxial(S.R, S.c, S.n, S.Dinf, S.Dr);
-  parD = paraxial(S.R, S.c, S.n, de.inf, de.Dr);
-  LUT = buildLUT(cfgD);
+  document.body.dataset.obj = S.object;
+  OBJS = (S.object === 'compare' ? ['sphere', 'planes'] : [S.object]).map(makeObj);
+  PRIMARY = OBJS[0];
+}
+const objOf = kind => OBJS.find(o => o.kind === kind);
+function kOf(o){
+  if (S.autoK) return o.parD.m0;
+  if (S.object !== 'compare' || o === OBJS[0]) return S.k;
+  return o.parD.m0 * S.k / OBJS[0].parD.m0;   // same detune relative to its own centre value
 }
 
 /* ---------- patterns ---------- */
@@ -582,11 +672,11 @@ function inkFn(type, p, duty, thDeg, phase){
   const ns = Math.max(8, Math.round(Math.PI * S.R / p));
   return (x, y) => { const u = (Math.atan2(y, x) + Math.PI*2 + thDeg*D2R) / (Math.PI*2) * ns + ph; return u - Math.floor(u) < duty; };
 }
-// B as printed: returns 1 ink, 0 clear, -1 no match possible. (x, y) on the back, seen from the front.
-function makeBackSampler(){
+// B as printed: 1 ink, 0 clear, -1 no match possible. (x, y) on the back, seen from the front.
+function makeBackSampler(o){
   const ink = inkFn(S.pat, S.p, S.duty, S.th + S.dth, S.phase);
-  if (S.mode === 'uniform'){ const s = S.k * (1 + S.eps); return (x, y) => ink(x/s, y/s) ? 1 : 0; }
-  const L = LUT, stp = L.step, uni = L.uni, rmax = L.rhoMax, NU = uni.length - 1, e = 1 + S.eps;
+  if (S.mode === 'uniform'){ const s = kOf(o) * (1 + S.eps); return (x, y) => ink(x/s, y/s) ? 1 : 0; }
+  const L = o.LUT, stp = L.step, uni = L.uni, rmax = L.rhoMax, NU = uni.length - 1, e = 1 + S.eps;
   return (x, y) => {
     const a = Math.hypot(x, y);
     if (!(rmax > 0) || a > rmax) return -1;
@@ -594,22 +684,21 @@ function makeBackSampler(){
     return ink(x*ra/e, y*ra/e) ? 1 : 0;
   };
 }
-// back-pattern coordinate in A units (for derivatives)
-function backCoord(Qx, Qy){
-  if (S.mode === 'uniform'){ const s = S.k * (1 + S.eps); return [Qx / s, Qy / s]; }
-  const ra = lutRatio(LUT, Math.hypot(Qx, Qy));
+function backCoord(o, Qx, Qy){
+  if (S.mode === 'uniform'){ const s = kOf(o) * (1 + S.eps); return [Qx / s, Qy / s]; }
+  const ra = lutRatio(o.LUT, Math.hypot(Qx, Qy));
   if (ra !== ra) return null;
   return [Qx * ra / (1 + S.eps), Qy * ra / (1 + S.eps)];
 }
-function sampleAt(x){
-  const R = cfg.R, h = 1e-4 * R;
-  const r0 = traceFromP(cfg, frontPoint(R, x, 0)),
-        rp = traceFromP(cfg, frontPoint(R, x + h, 0)),
-        rm = traceFromP(cfg, frontPoint(R, x - h, 0)),
-        ry = traceFromP(cfg, frontPoint(R, x, h));
+function sampleAt(o, x){
+  const cfg = o.cfg, h = 1e-4 * cfg.R;
+  const r0 = traceFromP(cfg, frontPoint(cfg, x, 0)),
+        rp = traceFromP(cfg, frontPoint(cfg, x + h, 0)),
+        rm = traceFromP(cfg, frontPoint(cfg, x - h, 0)),
+        ry = traceFromP(cfg, frontPoint(cfg, x, h));
   if (!r0 || !rp || !rm || !ry) return null;
   const mr = (rp.Q[0] - rm.Q[0]) / (2*h), mt = ry.Q[1] / h;
-  const bp = backCoord(rp.Q[0], rp.Q[1]), bm = backCoord(rm.Q[0], rm.Q[1]), by = backCoord(ry.Q[0], ry.Q[1]);
+  const bp = backCoord(o, rp.Q[0], rp.Q[1]), bm = backCoord(o, rm.Q[0], rm.Q[1]), by = backCoord(o, ry.Q[0], ry.Q[1]);
   let Jr = NaN, Jt = NaN;
   if (bp && bm && by){ Jr = (bp[0] - bm[0]) / (2*h); Jt = by[1] / h; }
   const Mr = isFinite(Jr) ? moire(S.p, S.p / Math.abs(Jr), S.dth) : NaN;
@@ -619,45 +708,54 @@ function sampleAt(x){
 
 /* ---------- section drawing ---------- */
 const SEC = { s: 1, cx: 320, cy: 282 };
-function drawSection(){
-  const R = cfg.R, s = 212 / R, cx = 320, cy = 282;
+function drawSection(o, el){
+  const cfg = o.cfg, R = cfg.R, s = 212 / R, cx = 320, cy = 282, planes = cfg.kind === 'planes';
   SEC.s = s; SEC.cx = cx; SEC.cy = cy;
   const X = x => (cx + x*s).toFixed(1), Y = z => (cy - z*s).toFixed(1);
-  const c = cfg.c, full = cfg.full, w = full ? 0 : backRadius(cfg);
-  let g = `<defs><radialGradient id="gl" cx="0.42" cy="0.45" r="0.7">
+  const gid = 'gl_' + cfg.kind;
+  let g = `<defs><radialGradient id="${gid}" cx="0.42" cy="0.45" r="0.7">
     <stop offset="0" style="stop-color:var(--glassA)"/><stop offset="1" style="stop-color:var(--glassB)"/></radialGradient></defs>`;
-  if (full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="url(#gl)" stroke="var(--ink)" stroke-opacity=".55"/>`;
-  else g += `<path d="M${X(-w)} ${Y(c)} A${R*s} ${R*s} 0 ${c > 0 ? 1 : 0} 0 ${X(w)} ${Y(c)} Z" fill="url(#gl)" stroke="var(--ink)" stroke-opacity=".55"/>`;
-  if (!full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="none" stroke="var(--ink)" stroke-opacity=".18" stroke-dasharray="3 5"/>`;
+  const c = cfg.c, full = cfg.full, w = planes ? R : (full ? 0 : backRadius(cfg)), zB = cfg.zB;
+  if (planes){
+    const glass = cfg.n > 1.0001;
+    g += `<rect x="${X(-R)}" y="${Y(zB)}" width="${2*R*s}" height="${cfg.t*s}" fill="${glass ? `url(#${gid})` : 'var(--glassA)'}" fill-opacity="${glass ? 1 : 0.25}" stroke="var(--ink)" stroke-opacity=".25"/>`;
+    g += `<line x1="${X(-R)}" y1="${Y(-R)}" x2="${X(R)}" y2="${Y(-R)}" stroke="var(--front)" stroke-width="3"/>`;
+  } else {
+    if (full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="url(#${gid})" stroke="var(--ink)" stroke-opacity=".55"/>`;
+    else g += `<path d="M${X(-w)} ${Y(c)} A${R*s} ${R*s} 0 ${c > 0 ? 1 : 0} 0 ${X(w)} ${Y(c)} Z" fill="url(#${gid})" stroke="var(--ink)" stroke-opacity=".55"/>`;
+    if (!full) g += `<circle cx="${cx}" cy="${cy}" r="${R*s}" fill="none" stroke="var(--ink)" stroke-opacity=".18" stroke-dasharray="3 5"/>`;
+  }
   g += `<line x1="${cx}" y1="8" x2="${cx}" y2="592" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="8 4 2 4"/>`;
-  g += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--ink)"/><text x="${cx+6}" y="${cy-6}" class="lbl">C</text>`;
+  if (!planes) g += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--ink)"/><text x="${cx+6}" y="${cy-6}" class="lbl">C</text>`;
 
   const xmax = frontXmax(cfg), N = S.rays;
   let out = '', ins = '', marks = '';
   for (let i = 0; i < N; i++){
     const x = -0.97*xmax + 1.94*xmax*i/(N-1);
-    const r = traceFromP(cfg, frontPoint(R, x, 0)); if (!r) continue;
+    const r = traceFromP(cfg, frontPoint(cfg, x, 0)); if (!r) continue;
     const P = r.P, Q = r.Q, d = r.d, far = 3*R;
     out += `<line x1="${X(P[0]-d[0]*far)}" y1="${Y(P[2]-d[2]*far)}" x2="${X(P[0])}" y2="${Y(P[2])}"/>`;
     ins += `<line x1="${X(P[0])}" y1="${Y(P[2])}" x2="${X(Q[0])}" y2="${Y(Q[2])}"/>`;
-    marks += `<circle cx="${X(P[0])}" cy="${Y(P[2])}" r="3" fill="var(--front)"/><circle cx="${X(Q[0])}" cy="${Y(Q[2])}" r="3" fill="var(--back)"/>`;
+    marks += `<circle cx="${X(P[0])}" cy="${Y(P[2])}" r="3" fill="var(--front)"/><circle cx="${X(Q[0])}" cy="${Y(Q[2])}" r="3" fill="var(--back)"${planes && !r.plane ? ' fill-opacity=".35"' : ''}/>`;
   }
   g += `<g stroke="var(--rayout)" stroke-width="1" stroke-opacity=".9">${out}</g>`;
   g += `<g stroke="var(--rayin)" stroke-width="1.2">${ins}</g>`;
 
-  const zF = -R + par.s;
-  if (isFinite(par.s) && par.s > 0 && zF < 1.25*R){
-    g += `<g stroke="var(--rayin)" stroke-width="2"><line x1="${cx-6}" y1="${+Y(zF)-6}" x2="${cx+6}" y2="${+Y(zF)+6}"/><line x1="${cx-6}" y1="${+Y(zF)+6}" x2="${cx+6}" y2="${+Y(zF)-6}"/></g>
-      <text x="${cx+10}" y="${+Y(zF)+4}" class="lblk">F′</text>`;
+  if (!planes){
+    const zF = -R + o.par.s;
+    if (isFinite(o.par.s) && o.par.s > 0 && zF < 1.25*R){
+      g += `<g stroke="var(--rayin)" stroke-width="2"><line x1="${cx-6}" y1="${+Y(zF)-6}" x2="${cx+6}" y2="${+Y(zF)+6}"/><line x1="${cx-6}" y1="${+Y(zF)+6}" x2="${cx+6}" y2="${+Y(zF)-6}"/></g>
+        <text x="${cx+10}" y="${+Y(zF)+4}" class="lblk">F′</text>`;
+    }
   }
 
   const px = S.probe * 0.995 * xmax;
-  const pr = traceFromP(cfg, frontPoint(R, px, 0));
+  const pr = traceFromP(cfg, frontPoint(cfg, px, 0));
   if (pr){
     const P = pr.P, Q = pr.Q, d = pr.d, far = 3*R;
     g += `<line x1="${X(P[0]-d[0]*far)}" y1="${Y(P[2]-d[2]*far)}" x2="${X(P[0])}" y2="${Y(P[2])}" stroke="var(--ink)" stroke-width="2.2"/>`;
     g += `<line x1="${X(P[0])}" y1="${Y(P[2])}" x2="${X(Q[0])}" y2="${Y(Q[2])}" stroke="var(--rayin)" stroke-width="3"/>`;
-    const nx = P[0]/R, nz = P[2]/R;
+    const nx = planes ? 0 : P[0]/R, nz = planes ? -1 : P[2]/R;
     g += `<line x1="${X(P[0] - nx*0.35*R)}" y1="${Y(P[2] - nz*0.35*R)}" x2="${X(P[0] + nx*0.3*R)}" y2="${Y(P[2] + nz*0.3*R)}" stroke="var(--muted)" stroke-dasharray="4 3"/>`;
     const i = Math.acos(Math.min(1, pr.cosi)) / D2R, rr = Math.acos(Math.min(1, pr.cost)) / D2R;
     const lx = +X(P[0]) + (P[0] >= 0 ? 12 : -12), anchor = P[0] >= 0 ? 'start' : 'end';
@@ -666,59 +764,65 @@ function drawSection(){
   }
   g += marks;
 
-  if (!full){
-    g += `<line x1="${X(-w)}" y1="${Y(c)}" x2="${X(w)}" y2="${Y(c)}" stroke="var(--back)" stroke-width="3"/>`;
-    g += `<circle cx="${X(w)}" cy="${Y(c)}" r="6" fill="var(--panel)" stroke="var(--back)" stroke-width="2"/>`;
-    g += `<line x1="${+X(-w)-10}" y1="${Y(c)}" x2="${+X(w)+16}" y2="${Y(c)}" stroke="transparent" stroke-width="20" style="cursor:ns-resize"/>`;
-    g += `<text x="${cx}" y="${+Y(c) - 10}" text-anchor="middle" class="lblk">back plane, pattern B (c = ${S.c.toFixed(2)} R)</text>`;
+  const zPlane = planes ? zB : c;
+  if (planes || !full){
+    g += `<line x1="${X(-w)}" y1="${Y(zPlane)}" x2="${X(w)}" y2="${Y(zPlane)}" stroke="var(--back)" stroke-width="3"/>`;
+    g += `<circle cx="${X(w)}" cy="${Y(zPlane)}" r="6" fill="var(--panel)" stroke="var(--back)" stroke-width="2"/>`;
+    g += `<line x1="${+X(-w)-10}" y1="${Y(zPlane)}" x2="${+X(w)+16}" y2="${Y(zPlane)}" stroke="transparent" stroke-width="20" style="cursor:ns-resize"/>`;
+    g += `<text x="${cx}" y="${+Y(zPlane) - 10}" text-anchor="middle" class="lblk">${planes ? `back layer, pattern B (t = ${mm(cfg.t, 0)}${cfg.n > 1.0001 ? ', glass' : ', air'})` : `back plane, pattern B (c = ${S.c.toFixed(2)} R)`}</text>`;
   } else {
     g += `<text x="${cx}" y="${+Y(R) - 10}" text-anchor="middle" class="lblk">full sphere, pattern B on the back half</text>`;
   }
-  g += `<text x="${cx}" y="${+Y(-R) + 22}" text-anchor="middle" class="lblk">front surface, pattern A</text>`;
+  g += `<text x="${cx}" y="${+Y(-R) + 22}" text-anchor="middle" class="lblk">${planes ? 'front layer' : 'front surface'}, pattern A</text>`;
 
-  const zTop = full ? R : c, xd = +X(R) + 26;
+  const zTop = planes ? zB : (full ? R : c), xd = +X(R) + 26;
   g += `<g stroke="var(--muted)"><line x1="${xd}" y1="${Y(-R)}" x2="${xd}" y2="${Y(zTop)}"/>
     <line x1="${xd-5}" y1="${Y(-R)}" x2="${xd+5}" y2="${Y(-R)}"/><line x1="${xd-5}" y1="${Y(zTop)}" x2="${xd+5}" y2="${Y(zTop)}"/></g>
-    <text transform="translate(${xd+14} ${(+Y(-R) + +Y(zTop))/2}) rotate(-90)" text-anchor="middle" class="lbl">L = ${mm(par.L, 0)}</text>`;
+    <text transform="translate(${xd+14} ${(+Y(-R) + +Y(zTop))/2}) rotate(-90)" text-anchor="middle" class="lbl">${planes ? 't' : 'L'} = ${mm(o.par.L, 0)}</text>`;
   const eyeTxt = S.Dinf ? 'viewer far away' : `viewer ${mm(S.Dr*R, 0)} below the front`;
   g += `<text x="${cx}" y="590" text-anchor="middle" class="lbl">↓ ${eyeTxt}${Math.abs(S.alpha) > 0.01 ? `, at ${f1(S.alpha)}°` : ''}</text>`;
-  $('sec').innerHTML = g;
+  el.innerHTML = g;
 }
 
 let drag = null;
-function svgPt(ev){
-  const svg = $('sec'), pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
+function svgPt(el, ev){
+  const pt = el.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(el.getScreenCTM().inverse());
 }
-$('sec').addEventListener('pointerdown', ev => {
-  const p = svgPt(ev), zc = (SEC.cy - p.y) / SEC.s / S.R;
-  drag = (!cfg.full && Math.abs(zc - S.c) * SEC.s * S.R < 12) ? 'plane' : 'probe';
-  $('sec').setPointerCapture(ev.pointerId);
-  moveDrag(p);
+document.querySelectorAll('.secsvg').forEach(el => {
+  el.addEventListener('pointerdown', ev => {
+    const o = objOf(el.dataset.kind); if (!o) return;
+    const p = svgPt(el, ev), zc = (SEC.cy - p.y) / SEC.s;
+    const zPlane = o.kind === 'planes' ? o.cfg.zB : (o.cfg.full ? Infinity : o.cfg.c);
+    drag = { el, kind: o.kind, what: Math.abs(zc - zPlane) * SEC.s < 12 ? 'plane' : 'probe' };
+    el.setPointerCapture(ev.pointerId);
+    moveDrag(p);
+  });
+  el.addEventListener('pointermove', ev => { if (drag && drag.el === el) moveDrag(svgPt(el, ev)); });
+  el.addEventListener('pointerup', endDrag);
+  el.addEventListener('pointercancel', endDrag);
 });
-$('sec').addEventListener('pointermove', ev => { if (drag) moveDrag(svgPt(ev)); });
-const endDrag = () => { if (drag){ drag = null; schedule(false); } };
-$('sec').addEventListener('pointerup', endDrag);
-$('sec').addEventListener('pointercancel', endDrag);
+function endDrag(){ if (drag){ drag = null; schedule(false); } }
 function moveDrag(p){
-  if (drag === 'plane'){
-    const zc = (SEC.cy - p.y) / SEC.s / S.R;
-    $('c').value = Math.max(-0.6, Math.min(1, zc)).toFixed(3);
+  const R = S.R, zc = (SEC.cy - p.y) / SEC.s;
+  if (drag.what === 'plane'){
+    if (drag.kind === 'planes'){ $('tLink').checked = false; $('t').value = Math.max(0.02, Math.min(2, (zc + R) / R)).toFixed(3); }
+    else $('c').value = Math.max(-0.6, Math.min(1, zc / R)).toFixed(3);
   } else {
-    const x = (p.x - SEC.cx) / SEC.s, xmax = frontXmax(cfg) * 0.995;
+    const o = objOf(drag.kind), x = (p.x - SEC.cx) / SEC.s, xmax = frontXmax(o.cfg) * 0.995;
     $('probe').value = Math.max(-1, Math.min(1, x / xmax)).toFixed(3);
   }
   schedule(true);
 }
 
 /* ---------- simulated view ---------- */
-const vctx = $('view').getContext('2d');
-function renderView(q){
-  const cvs = $('view'), Np = cvs.width, img = vctx.createImageData(Np, Np), data = img.data;
-  const R = cfg.R, Rsq = R*R, eta = 1/cfg.n, cpl = cfg.c, full = cfg.full;
+function renderView(o, cvs, q){
+  const ctx = cvs.getContext('2d'), Np = cvs.width, img = ctx.createImageData(Np, Np), data = img.data;
+  const cfg = o.cfg, R = cfg.R, Rsq = R*R, eta = 1/cfg.n, cpl = cfg.c, full = cfg.full, planes = cfg.kind === 'planes';
+  const zF = -R, tgap = cfg.t;
   const H = R * 1.04 / S.zoom, v = cfg.v, e1 = cfg.e1, E = cfg.E, inf = cfg.inf;
   const showF = S.show !== 'back', showB = S.show !== 'front';
-  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0), back = makeBackSampler();
+  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0), back = makeBackSampler(o);
   const FI = S.ink === 'mono' ? [0.07, 0.07, 0.08] : [0.16, 0.36, 0.98];
   const BI = S.ink === 'mono' ? [0.07, 0.07, 0.08] : [0.98, 0.22, 0.58];
   const inv = 1 / (q*q);
@@ -732,53 +836,63 @@ function renderView(q){
         if (inf){ ox = u1*e1[0] - 3*R*v[0]; oy = u2; oz = u1*e1[2] - 3*R*v[2]; dx = v[0]; dy = 0; dz = v[2]; }
         else { const tx = u1*e1[0] - E[0], ty = u2, tz = u1*e1[2] - E[2], l = Math.hypot(tx, ty, tz);
           ox = E[0]; oy = 0; oz = E[2]; dx = tx/l; dy = ty/l; dz = tz/l; }
-        const bb = ox*dx + oy*dy + oz*dz, cc = ox*ox + oy*oy + oz*oz - Rsq, disc = bb*bb - cc;
-        if (disc <= 0) continue;
-        const t1 = -bb - Math.sqrt(disc);
-        const Px = ox + t1*dx, Py = oy + t1*dy, Pz = oz + t1*dz;
-        if (!full && Pz >= cpl) continue;
-        const Nx = Px/R, Ny = Py/R, Nz = Pz/R, cosi = -(Nx*dx + Ny*dy + Nz*dz);
-        const kk = 1 - eta*eta*(1 - cosi*cosi); if (kk < 0) continue;
-        const f = eta*cosi - Math.sqrt(kk);
-        const tx = eta*dx + f*Nx, ty = eta*dy + f*Ny, tz = eta*dz + f*Nz;
-        const ts = -2*(Px*tx + Py*ty + Pz*tz);
-        let tp = Infinity; if (!full && tz > 1e-12) tp = (cpl - Pz) / tz;
-        let Qx, Qy, onPlane;
-        if (tp > 0 && tp < ts){ Qx = Px + tp*tx; Qy = Py + tp*ty; onPlane = true; }
-        else { Qx = Px + ts*tx; Qy = Py + ts*ty; onPlane = false; }
+        let Px, Py, cosi, Qx, Qy, onPlane;
+        if (planes){
+          if (dz <= 1e-9) continue;
+          const t1 = (zF - oz) / dz; Px = ox + t1*dx; Py = oy + t1*dy;
+          if (Px*Px + Py*Py > Rsq) continue;
+          cosi = dz;
+          const kk = 1 - eta*eta*(1 - cosi*cosi); if (kk < 0) continue;
+          const tz = Math.sqrt(kk), tt = tgap / tz;
+          Qx = Px + tt*eta*dx; Qy = Py + tt*eta*dy; onPlane = Qx*Qx + Qy*Qy <= Rsq;
+        } else {
+          const bb = ox*dx + oy*dy + oz*dz, cc = ox*ox + oy*oy + oz*oz - Rsq, disc = bb*bb - cc;
+          if (disc <= 0) continue;
+          const t1 = -bb - Math.sqrt(disc);
+          Px = ox + t1*dx; Py = oy + t1*dy; const Pz = oz + t1*dz;
+          if (!full && Pz >= cpl) continue;
+          const Nx = Px/R, Ny = Py/R, Nz = Pz/R; cosi = -(Nx*dx + Ny*dy + Nz*dz);
+          const kk = 1 - eta*eta*(1 - cosi*cosi); if (kk < 0) continue;
+          const f = eta*cosi - Math.sqrt(kk);
+          const tx = eta*dx + f*Nx, ty = eta*dy + f*Ny, tz = eta*dz + f*Nz;
+          const ts = -2*(Px*tx + Py*ty + Pz*tz);
+          let tp = Infinity; if (!full && tz > 1e-12) tp = (cpl - Pz) / tz;
+          if (tp > 0 && tp < ts){ Qx = Px + tp*tx; Qy = Py + tp*ty; onPlane = true; }
+          else { Qx = Px + ts*tx; Qy = Py + ts*ty; onPlane = false; }
+        }
         const base = 0.36 + 0.34*cosi;
         let r = base, g = base*1.02, b = base*1.05;
-        if (!full && !onPlane){ r *= 0.72; g *= 0.74; b *= 0.76; }
+        if ((planes || !full) && !onPlane){ r *= 0.72; g *= 0.74; b *= 0.76; }
         if (showF && inkA(Px, Py)){ r *= FI[0]; g *= FI[1]; b *= FI[2]; }
-        if (showB){
+        if (showB && (onPlane || !planes)){
           const val = back(Qx, Qy);
           if (val < 0){ r = r*1.08 + 0.03; g *= 0.86; b *= 0.86; }
           else if (val){ r *= BI[0]; g *= BI[1]; b *= BI[2]; }
         }
         cr += r; cg += g; cb += b;
       }
-      const o = (py*Np + px)*4;
-      data[o] = Math.min(255, cr*inv*255); data[o+1] = Math.min(255, cg*inv*255); data[o+2] = Math.min(255, cb*inv*255); data[o+3] = 255;
+      const o4 = (py*Np + px)*4;
+      data[o4] = Math.min(255, cr*inv*255); data[o4+1] = Math.min(255, cg*inv*255); data[o4+2] = Math.min(255, cb*inv*255); data[o4+3] = 255;
     }
   }
-  vctx.putImageData(img, 0, 0);
+  ctx.putImageData(img, 0, 0);
   const toPx = u => (u / H + 1) / 2 * Np, k = Np / 420;
-  vctx.save();
-  vctx.setLineDash([6*k, 5*k]); vctx.strokeStyle = 'rgba(255,210,63,.55)'; vctx.lineWidth = Math.max(1, k);
-  vctx.beginPath(); vctx.moveTo(0, Np/2); vctx.lineTo(Np, Np/2); vctx.stroke();
-  const xmax = frontXmax(cfg), P = frontPoint(R, S.probe*0.995*xmax, 0);
+  ctx.save();
+  ctx.setLineDash([6*k, 5*k]); ctx.strokeStyle = 'rgba(255,210,63,.55)'; ctx.lineWidth = Math.max(1, k);
+  ctx.beginPath(); ctx.moveTo(0, Np/2); ctx.lineTo(Np, Np/2); ctx.stroke();
+  const xmax = frontXmax(cfg), P = frontPoint(cfg, S.probe*0.995*xmax, 0);
   if (P){
     let u;
     if (inf) u = dot(P, e1);
     else { const dP = [P[0]-E[0], P[1]-E[1], P[2]-E[2]], lam = -dot(E, v) / dot(dP, v);
       u = dot([E[0] + lam*dP[0], 0, E[2] + lam*dP[2]], e1); }
-    vctx.setLineDash([]); vctx.strokeStyle = '#ffd23f'; vctx.lineWidth = 2*k;
-    vctx.beginPath(); vctx.arc(toPx(u), Np/2, 7*k, 0, Math.PI*2); vctx.stroke();
+    ctx.setLineDash([]); ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 2*k;
+    ctx.beginPath(); ctx.arc(toPx(u), Np/2, 7*k, 0, Math.PI*2); ctx.stroke();
   }
-  vctx.restore();
+  ctx.restore();
 }
 
-/* ---------- the two artworks ---------- */
+/* ---------- the artworks ---------- */
 function niceLen(maxLen){
   const c = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
   let best = 1; for (const v of c) if (v <= maxLen) best = v; return best;
@@ -788,21 +902,21 @@ function drawArt(cv, ext, discR, f, limitR, label){
   const q = 2, inv = 1/(q*q), hatch = ext * 0.035;
   for (let py = 0; py < N; py++){
     for (let px = 0; px < N; px++){
-      let acc0 = 0, acc1 = 0, acc2 = 0;
+      let a0 = 0, a1 = 0, a2 = 0;
       for (let sy = 0; sy < q; sy++) for (let sx = 0; sx < q; sx++){
         const x = ((px + (sx + 0.5)/q) / N * 2 - 1) * ext, y = (1 - (py + (sy + 0.5)/q) / N * 2) * ext;
-        if (x*x + y*y > discR*discR){ acc0 += 222; acc1 += 226; acc2 += 231; continue; }
+        if (x*x + y*y > discR*discR){ a0 += 222; a1 += 226; a2 += 231; continue; }
         const v = f(x, y);
-        if (v < 0){ const hh = ((x + y) / hatch) - Math.floor((x + y) / hatch) < 0.5; acc0 += hh ? 236 : 249; acc1 += hh ? 176 : 222; acc2 += hh ? 176 : 222; }
-        else if (v){ acc0 += 22; acc1 += 24; acc2 += 28; }
-        else { acc0 += 252; acc1 += 252; acc2 += 250; }
+        if (v < 0){ const hh = ((x + y) / hatch) - Math.floor((x + y) / hatch) < 0.5; a0 += hh ? 236 : 249; a1 += hh ? 176 : 222; a2 += hh ? 176 : 222; }
+        else if (v){ a0 += 22; a1 += 24; a2 += 28; }
+        else { a0 += 252; a1 += 252; a2 += 250; }
       }
       const o = (py*N + px)*4;
-      d[o] = acc0*inv; d[o+1] = acc1*inv; d[o+2] = acc2*inv; d[o+3] = 255;
+      d[o] = a0*inv; d[o+1] = a1*inv; d[o+2] = a2*inv; d[o+3] = 255;
     }
   }
   ctx.putImageData(img, 0, 0);
-  const k = N / Math.max(1, cv.clientWidth || N), toP = mmv => (mmv / ext + 1) / 2 * N, sc = N / (2*ext);
+  const cw = Math.max(1, cv.clientWidth || N), k = (N / cw) * Math.min(1, Math.max(0.6, cw / 230)), sc = N / (2*ext);
   ctx.save();
   ctx.strokeStyle = '#4a525b'; ctx.lineWidth = 1.2*k;
   ctx.beginPath(); ctx.arc(N/2, N/2, discR*sc, 0, Math.PI*2); ctx.stroke();
@@ -823,17 +937,23 @@ function drawArt(cv, ext, discR, f, limitR, label){
   ctx.restore();
 }
 function renderArt(){
-  const R = S.R, xA = frontXmax(cfg), wB = backRadius(cfg);
-  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0), back = makeBackSampler();
-  const same = S.artScale === 'same', extS = Math.max(xA, wB) * 1.06;
-  drawArt($('artA'), same ? extS : xA * 1.06, xA, (x, y) => inkA(x, y) ? 1 : 0, LUT.xpMax, 'A');
-  const fB = S.mirror ? (x, y) => back(-x, y) : back;
-  drawArt($('artB'), same ? extS : wB * 1.06, wB, fB, S.mode === 'warp' ? LUT.rhoMax : null, 'B');
-  const pb = S.mode === 'uniform' ? S.p * Math.abs(S.k) * (1 + S.eps) : S.p * Math.abs(parD.m0) * (1 + S.eps);
-  $('capA').innerHTML = `<b>Front</b>, Ø ${mm(2*xA, 0)}, pitch ${mm(S.p, 1)}, axial projection`;
-  $('capA').title = 'Artwork A, wrapped onto the front by projection along the axis. Red dashed circle: beyond it B cannot match.';
-  $('capB').innerHTML = `<b>Back</b>, Ø ${mm(2*wB, 0)}, centre pitch ${mm(pb, 2)}${S.mirror ? ', mirrored' : ', seen from front'}`;
-  $('capB').title = cfg.full ? 'Artwork B on the curved back half, in axial projection.' : 'Artwork B on the back plane. Hatched: no match possible.';
+  const sph = objOf('sphere'), pl = objOf('planes'), cmp = S.object === 'compare';
+  const xA = sph ? frontXmax(sph.cfg) : S.R;
+  const radii = [xA]; if (sph) radii.push(backRadius(sph.cfg)); if (pl) radii.push(S.R);
+  const same = S.artScale === 'same', extS = Math.max(...radii) * 1.06;
+  const inkA = inkFn(S.pat, S.p, S.duty, S.th, 0);
+  drawArt($('artA'), same ? extS : xA * 1.06, xA, (x, y) => inkA(x, y) ? 1 : 0, sph ? sph.LUT.xpMax : null, 'A');
+  $('capA').innerHTML = `<b>Front</b>, Ø ${mm(2*xA, 0)}, pitch ${mm(S.p, 1)}${sph ? ', axial projection' : ''}`;
+  $('capA').title = 'Artwork A. Red dashed circle: beyond it B cannot match (sphere).';
+  for (const o of OBJS){
+    const back = makeBackSampler(o), wB = backRadius(o.cfg);
+    const f = S.mirror ? (x, y) => back(-x, y) : back;
+    const id = o.kind === 'sphere' ? 'BS' : 'BP';
+    drawArt($('art' + id), same ? extS : wB * 1.06, wB, f, S.mode === 'warp' ? o.LUT.rhoMax : null, cmp ? `B, ${o.name.toLowerCase()}` : 'B');
+    const pb = S.p * Math.abs(S.mode === 'uniform' ? kOf(o) : o.parD.m0) * (1 + S.eps);
+    $('cap' + id).innerHTML = `<b>Back${cmp ? ', ' + o.name.toLowerCase() : ''}</b>, Ø ${mm(2*wB, 0)}, centre pitch ${mm(pb, 2)}${S.mirror ? ', mirrored' : ''}`;
+    $('cap' + id).title = 'Artwork B as seen from the front. Hatched: no match possible.';
+  }
 }
 
 /* ---------- charts ---------- */
@@ -847,7 +967,11 @@ function niceTicks(a, b, n){
 function lineChart(el, o){
   const bb = el.getBoundingClientRect();
   const W = Math.max(280, Math.round(bb.width || 560)), H = Math.max(150, Math.round(bb.height || 260));
-  const ml = o.ylabel ? 64 : 52, mr = 14, mt = 30, mb = 38;
+  const ml = o.ylabel ? 64 : 52, mr = 14, mb = 38;
+  // legend rows (wrap when the labels do not fit on one line)
+  const leg = []; let lxx = ml, row = 0;
+  for (const s of o.series){ const wd = 34 + s.label.length * 6.4; if (lxx + wd > W - mr && lxx > ml){ row++; lxx = ml; } leg.push({ s, x: lxx, row }); lxx += wd; }
+  const mt = 30 + row * 16;
   el.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const sx = x => ml + (x - o.xmin) / (o.xmax - o.xmin) * (W - ml - mr);
   const sy = y => mt + (o.ymax - Math.min(o.ymax, Math.max(o.ymin, y))) / (o.ymax - o.ymin) * (H - mt - mb);
@@ -881,54 +1005,66 @@ function lineChart(el, o){
     g += `<line x1="${sx(v.x)}" x2="${sx(v.x)}" y1="${mt}" y2="${H-mb}" stroke="${v.color || 'var(--ink)'}" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="${v.dash || '2 3'}"/>`;
     if (v.label) g += `<text x="${sx(v.x) + 4}" y="${v.top ? mt + 14 : H - mb - 6}" font-size="11.5" fill="${v.color || 'var(--ink)'}">${v.label}</text>`;
   }
-  let lx = ml;
-  for (const s of o.series){
-    g += `<line x1="${lx}" x2="${lx+18}" y1="${mt-12}" y2="${mt-12}" stroke="${s.color}" stroke-width="2" stroke-dasharray="${s.dash || ''}"/>
-      <text x="${lx+23}" y="${mt-8}" font-size="12" fill="var(--ink)">${s.label}</text>`;
-    lx += 34 + s.label.length * 6.6;
+  for (const { s, x, row: r } of leg){
+    const yy = 18 + r * 16;
+    g += `<line x1="${x}" x2="${x+18}" y1="${yy}" y2="${yy}" stroke="${s.color}" stroke-width="2" stroke-dasharray="${s.dash || ''}"/>
+      <text x="${x+23}" y="${yy+4}" font-size="12" fill="var(--ink)">${s.label}</text>`;
   }
   el.innerHTML = g;
 }
 const CAPS = {
   scale: 'Scale B needs relative to A along the section, for the current eye: m_r across the rings, m_t along them. Where a curve meets the k line, a uniformly scaled B matches A.',
   moire: 'Local fringe spacing on the front artwork, for the current eye. A flat line means evenly spaced fringes; curves at the top mean near-perfect match.',
-  pulse: 'Fringes across the front at the centre’s fringe spacing, as the visitor’s distance changes (paraxial). Where the curve touches zero the field goes uniform: walking through that distance makes the pattern pulse.'
+  pulse: 'Fringes across the front (centre spacing) as the visitor’s distance changes, paraxial. Where a curve touches zero the field goes uniform: walking through that distance makes the pattern pulse.'
 };
-function drawChart(samples, Mdes){
-  const el = $('chart'), R = S.R, xmax = frontXmax(cfg), xProbe = S.probe * 0.995 * xmax;
-  if (S.tab === 'scale'){
-    const vals = samples.flatMap(s => s ? [s.mr, s.mt] : []).filter(isFinite);
-    let ymin = Math.min(0, ...vals, S.mode === 'uniform' ? S.k : 0), ymax = Math.max(1, ...vals, S.mode === 'uniform' ? S.k : 0);
-    ymin = Math.max(-2, ymin - 0.05); ymax = Math.min(3, ymax + 0.05);
-    lineChart(el, { xmin: -xmax, xmax, ymin, ymax, xlabel: 'front position x (mm), axial projection', ylabel: 'scale B / A',
-      vlines: [{ x: xProbe, label: 'probe' }],
-      series: [{ pts: samples.map(s => [s.x, s.ok ? s.mr : null]), color: 'var(--c1)', label: 'm_r across rings' },
-               { pts: samples.map(s => [s.x, s.ok ? s.mt : null]), color: 'var(--c2)', label: 'm_t along rings', dash: '6 4' }],
-      hlines: [{ y: parD.m0, color: 'var(--muted)', dash: '2 3', label: 'm₀ design ' + parD.m0.toFixed(3) },
-        ...(S.mode === 'uniform' ? [{ y: S.k, color: 'var(--accent)', label: 'k ' + S.k.toFixed(3) }] : [])] });
-  } else if (S.tab === 'moire'){
-    const yTop = isFinite(Mdes) ? Math.min(4*R, Math.max(3*Mdes, 10*S.p)) : 2*R;
-    lineChart(el, { xmin: -xmax, xmax, ymin: 0, ymax: yTop, xlabel: 'front position x (mm)', ylabel: 'moiré period (mm)', yfmt: t => f1(t, 0),
-      vlines: [{ x: xProbe, label: 'probe' }],
-      series: [{ pts: samples.map(s => [s.x, s.ok ? s.Mr : null]), color: 'var(--c1)', label: 'across rings' },
-               { pts: samples.map(s => [s.x, s.ok ? s.Mt : null]), color: 'var(--c2)', label: 'along rings', dash: '6 4' }],
-      hlines: [{ y: Mdes, color: 'var(--accent)', dash: '2 3', label: 'design ' + mm(Mdes, 0) }] });
-  } else {
-    const de = designEye(), pts = [], Dmin = 1, Dmax = 30;
-    const countAt = m => {
-      const J = S.mode === 'uniform' ? m / (S.k * (1 + S.eps)) : m / (parD.m0 * (1 + S.eps));
-      const M = moire(S.p, S.p / Math.abs(J), S.dth);
-      return isFinite(M) ? 2 * xmax / M : 0;
-    };
-    for (let i = 0; i <= 260; i++){
-      const Dr = Dmin * Math.pow(Dmax / Dmin, i / 260);
-      pts.push([Dr * R, countAt(paraxial(R, S.c, S.n, false, Dr).m0)]);
+const SHORT = { sphere: 'sphere', planes: 'planes' };
+function drawChart(sets){
+  const el = $('chart'), R = S.R, cmp = sets.length > 1;
+  const xmax = Math.max(...sets.map(s => frontXmax(s.o.cfg))), xProbe = S.probe * 0.995 * frontXmax(sets[0].o.cfg);
+  const colObj = o => o.kind === 'sphere' ? 'var(--c1)' : 'var(--c2)';
+  if (S.tab === 'scale' || S.tab === 'moire'){
+    const isScale = S.tab === 'scale', series = [], hlines = [];
+    for (const { o, samples, Mdes } of sets){
+      const kr = isScale ? 'mr' : 'Mr', kt = isScale ? 'mt' : 'Mt';
+      series.push({ pts: samples.map(s => [s.x, s.ok ? s[kr] : null]), color: cmp ? colObj(o) : 'var(--c1)', label: cmp ? `${SHORT[o.kind]} across` : (isScale ? 'm_r across rings' : 'across rings') });
+      series.push({ pts: samples.map(s => [s.x, s.ok ? s[kt] : null]), color: cmp ? colObj(o) : 'var(--c2)', dash: '6 4', label: cmp ? `${SHORT[o.kind]} along` : (isScale ? 'm_t along rings' : 'along rings') });
+      if (isScale){
+        hlines.push({ y: o.parD.m0, color: cmp ? colObj(o) : 'var(--muted)', dash: '2 3', label: `m₀${cmp ? ' ' + SHORT[o.kind] : ' design'} ${o.parD.m0.toFixed(3)}` });
+        if (S.mode === 'uniform' && !S.autoK) hlines.push({ y: kOf(o), color: 'var(--accent)', label: `k${cmp ? ' ' + SHORT[o.kind] : ''} ${kOf(o).toFixed(3)}` });
+      } else hlines.push({ y: Mdes, color: cmp ? colObj(o) : 'var(--accent)', dash: '2 3', label: `design${cmp ? ' ' + SHORT[o.kind] : ''} ${mm(Mdes, 0)}` });
     }
-    const far = countAt(paraxial(R, S.c, S.n, true, 1).m0);
-    const ymax = Math.max(2, Math.min(60, Math.max(...pts.map(p => p[1]), far) * 1.1));
-    lineChart(el, { xmin: 0, xmax: Dmax * R, ymin: 0, ymax, xlabel: 'visitor distance to the front (mm)', ylabel: 'fringes across', yfmt: t => f1(t, 0),
-      series: [{ pts, color: 'var(--c3)', label: 'fringes across the front' }],
-      hlines: [{ y: far, color: 'var(--muted)', dash: '2 3', label: 'far away ' + far.toFixed(1) }],
+    let ymin, ymax, yfmt;
+    if (isScale){
+      const vals = series.flatMap(s => s.pts.map(p => p[1])).filter(v => v !== null && isFinite(v));
+      ymin = Math.max(-2, Math.min(0, ...vals) - 0.05); ymax = Math.min(3, Math.max(1, ...vals, ...hlines.map(h => h.y)) + 0.05);
+    } else {
+      const Md = sets.map(s => s.Mdes).filter(isFinite);
+      ymin = 0; ymax = Md.length ? Math.min(4*R, Math.max(3*Math.max(...Md), 10*S.p)) : 2*R; yfmt = t => f1(t, 0);
+    }
+    lineChart(el, { xmin: -xmax, xmax, ymin, ymax, yfmt, xlabel: 'front position x (mm)', ylabel: isScale ? 'scale B / A' : 'moiré period (mm)',
+      vlines: [{ x: xProbe, label: 'probe' }], series, hlines });
+  } else {
+    const de = designEye(), Dmin = 1, Dmax = 30, series = [], hlines = [];
+    let top = 2;
+    for (const { o } of sets){
+      const xm = frontXmax(o.cfg), cfg = o.cfg;
+      const countAt = m => {
+        const J = S.mode === 'uniform' ? m / (kOf(o) * (1 + S.eps)) : m / (o.parD.m0 * (1 + S.eps));
+        const M = moire(S.p, S.p / Math.abs(J), S.dth);
+        return isFinite(M) ? 2 * xm / M : 0;
+      };
+      const pts = [];
+      for (let i = 0; i <= 260; i++){
+        const Dr = Dmin * Math.pow(Dmax / Dmin, i / 260);
+        pts.push([Dr * R, countAt(paraxialK(cfg.kind, R, S.c, cfg.n, false, Dr, cfg.t).m0)]);
+      }
+      const far = countAt(paraxialK(cfg.kind, R, S.c, cfg.n, true, 1, cfg.t).m0);
+      top = Math.max(top, ...pts.map(p => p[1]), far);
+      series.push({ pts, color: cmp ? colObj(o) : 'var(--c3)', label: cmp ? o.name : 'fringes across the front' });
+      hlines.push({ y: far, color: cmp ? colObj(o) : 'var(--muted)', dash: '2 3', label: `far away ${far.toFixed(1)}` });
+    }
+    lineChart(el, { xmin: 0, xmax: Dmax * R, ymin: 0, ymax: Math.min(60, top * 1.1), xlabel: 'visitor distance to the front (mm)', ylabel: 'fringes across', yfmt: t => f1(t, 0),
+      series, hlines,
       vlines: [ ...(S.Dinf ? [] : [{ x: S.Dr * R, label: 'eye now', color: 'var(--accent)', dash: '' }]),
                 ...(de.inf ? [] : [{ x: de.Dr * R, label: 'design', color: 'var(--muted)', top: true }]) ] });
   }
@@ -947,108 +1083,154 @@ function drawBeat(p2, M){
     const vals = [a ? 25 : 170, b ? 25 : 170, (a || b) ? 25 : 170];
     rows.forEach(([y0, y1], i) => { ctx.fillStyle = `rgb(${vals[i]},${vals[i]},${vals[i]+4})`; ctx.fillRect(X, y0, 1, y1 - y0); });
   }
-  $('beatInfo').textContent = `window ${mm(win, 0)}, p₂ = ${mm(p2, 2)}, M = ${mm(M, 0)}`;
+  $('beatInfo').textContent = `${PRIMARY.name}: window ${mm(win, 0)}, p₂ = ${mm(p2, 2)}, M = ${mm(M, 0)}`;
 }
 
 /* ---------- numbers ---------- */
-const esc = s => String(s).replace(/"/g, '&quot;');
-const tile = (label, value, note = '', title = '', key = false) =>
-  `<div class="tile${key ? ' key' : ''}" title="${esc(title || (label + ': ' + value.replace(/<[^>]+>/g, '') + (note ? ', ' + note : '')))}"><div class="tl">${label}</div><div class="tv">${value}</div>${note ? `<div class="tn">${note}</div>` : '<div class="tn">&nbsp;</div>'}</div>`;
-
-function updateNumbers(){
-  const R = cfg.R, xmax = frontXmax(cfg);
-  const samples = [];
-  for (let i = 0; i < 241; i++){
-    const x = -0.99*xmax + 1.98*xmax*i/240, sm = sampleAt(x);
-    samples.push(sm ? Object.assign({ x, ok: true }, sm) : { x, ok: false });
-  }
-  const c0 = sampleAt(0);
-  const p2c = c0 && isFinite(c0.Jr) ? S.p / Math.abs(c0.Jr) : NaN;
-  const M0 = c0 ? c0.Mr : NaN;
-  const p2d = S.mode === 'uniform' ? S.p * S.k * (1 + S.eps) / parD.m0 : S.p * (1 + S.eps);
-  const Mdes = moire(S.p, Math.abs(p2d), S.dth);
-  drawChart(samples, Mdes);
-  drawBeat(isFinite(p2c) ? p2c : S.p, M0);
-
-  // drift: sway the eye by ±0.5° with the front point fixed at the vertex
-  const Pv = [0, 0, -R];
-  const ra = traceFromP(makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha + 0.5), Pv),
-        rb = traceFromP(makeCfg(S.R, S.c, S.n, S.Dinf, S.Dr, S.alpha - 0.5), Pv);
-  let driftV = '—', driftN = '';
+function metrics(o){
+  const cfg = o.cfg, R = cfg.R, c0 = sampleAt(o, 0), de = designEye();
+  const k = kOf(o);
+  const p2d = S.mode === 'uniform' ? S.p * k * (1 + S.eps) / o.parD.m0 : S.p * (1 + S.eps);
+  const m = { o, c0, Mdes: moire(S.p, Math.abs(p2d), S.dth), M0: c0 ? c0.Mr : NaN };
+  m.p2c = c0 && isFinite(c0.Jr) ? S.p / Math.abs(c0.Jr) : NaN;
+  // drift: move the eye with the front point fixed at the centre
+  const Pv = frontPoint(cfg, 0, 0);
+  const ra = traceFromP(makeCfg(cfg.kind, R, S.c, cfg.n, S.Dinf, S.Dr, S.alpha + 0.5, cfg.t), Pv),
+        rb = traceFromP(makeCfg(cfg.kind, R, S.c, cfg.n, S.Dinf, S.Dr, S.alpha - 0.5, cfg.t), Pv);
+  m.driftV = '—'; m.driftN = ''; m.slip = NaN;
   if (ra && rb && c0 && isFinite(c0.Jr)){
-    const ba = backCoord(ra.Q[0], ra.Q[1]), bb2 = backCoord(rb.Q[0], rb.Q[1]);
+    const ba = backCoord(o, ra.Q[0], ra.Q[1]), bb2 = backCoord(o, rb.Q[0], rb.Q[1]);
     if (ba && bb2){
-      const db = ba[0] - bb2[0], slip = Math.abs(db / c0.Jr);
-      if (isFinite(M0)){
-        const fr = Math.abs(db) * M0 / S.p;
-        if (!S.Dinf){ const deg = 10 / (R * (1 + S.Dr)) / D2R; driftV = mm(fr*deg, 1); driftN = 'per 10 mm sideways step'; }
-        else { driftV = mm(fr, 1); driftN = 'per 1° of view angle'; }
-      } else { driftV = 'none'; driftN = `layers slip ${mm(slip, 2)}/°`; }
+      const db = ba[0] - bb2[0], perDeg = S.Dinf ? 1 : 10 / (R * (1 + S.Dr)) / D2R;
+      m.slip = Math.abs(db / c0.Jr) * perDeg;
+      if (isFinite(m.M0)){ m.driftV = mm(Math.abs(db) * m.M0 / S.p * perDeg, 1); m.driftN = S.Dinf ? 'per 1° of view angle' : 'per 10 mm sideways step'; }
+      else { m.driftV = 'none'; m.driftN = `layers slip ${mm(m.slip, 2)}`; }
     }
   }
-  const de = designEye();
-  const relN = paraxial(S.R, S.c, S.n + 0.01, de.inf, de.Dr).m0 / parD.m0 - 1;
-  const dA = de.inf ? 20 : de.Dr / 2, dB = de.inf ? 10 : de.Dr * 2;
-  const mA = paraxial(S.R, S.c, S.n, false, dA).m0 / parD.m0 - 1, mB = paraxial(S.R, S.c, S.n, false, dB).m0 / parD.m0 - 1;
-  const ext = x => Math.abs(x) < 1e-6 ? '∞' : mm(S.p / Math.abs(x), 0);
-  const fV = !isFinite(parD.s) ? '∞' : mm(parD.s, 0);
-  const fN = !isFinite(parD.s) ? 'rays stay parallel' : parD.s < 0 ? 'virtual, rays diverge' :
-    parD.s < parD.L - 1e-6 ? 'inside, before the back' : Math.abs(parD.s - parD.L) < 1e-6 ? 'on the back' : 'beyond the back';
-
-  $('centreTiles').innerHTML =
-    tile('Centre scale m₀', parD.m0.toFixed(3), `B = ${Math.abs(parD.m0*100).toFixed(1)} % of A${parD.m0 < 0 ? ', inverted' : ''}`, 'Scale of B relative to A at the centre, for the design eye (paraxial).', true) +
-    tile('Moiré period', mm(M0, 0), `design ${mm(Mdes, 0)}`, 'Fringe spacing at the centre for the current eye, and for the design eye.', true) +
-    tile('Matchable radius', mm(LUT.xpMax, 0), LUT.folded ? 'map folds beyond' : 'to the edge', 'Front radius up to which a pre-distorted B can match A.') +
-    tile('Scale now', c0 ? c0.mr.toFixed(3) : '—', 'current eye, traced') +
-    tile('Axial thickness L', mm(parD.L, 0), 'L = R + c') +
-    tile('Back plane Ø', cfg.full ? 'full sphere' : mm(2*backRadius(cfg), 0), cfg.full ? 'B on curved back' : `rim at c = ${mm(cfg.c, 0)}`) +
-    tile('Focus F′ from front', fV, fN, 'Paraxial convergence point of the rays inside the glass, design eye.') +
-    tile('Fringe drift', driftV, driftN, 'How far the fringes at the centre move when the visitor moves.') +
-    tile('If n is 0.01 higher', pct(relN, 1), `extra fringes ${ext(relN)}`, 'Change of the centre scale and the resulting spurious fringe spacing.') +
-    tile(`Eye at ½× / 2×`, `${pct(mA, 0)} / ${pct(mB, 0)}`, `${mm(dA*R, 0)} / ${mm(dB*R, 0)}`, 'Change of the centre scale if the eye is at half or double the design distance.');
-
-  const xProbe = S.probe * 0.995 * xmax, sp = sampleAt(xProbe);
-  $('probeHint').textContent = `at x = ${mm(xProbe, 1)}`;
-  if (sp){
-    const r = sp.r0, i = Math.acos(Math.min(1, r.cosi)) / D2R, rr = Math.acos(Math.min(1, r.cost)) / D2R;
-    const arc = R * Math.asin(Math.min(1, Math.abs(r.P[0]) / R)) * Math.sign(r.P[0]);
-    $('probeTiles').innerHTML =
-      tile('Scale m_r / m_t', `${sp.mr.toFixed(3)} / ${sp.mt.toFixed(3)}`, 'across / along rings', '', true) +
-      tile('B pitch needed', mm(S.p*Math.abs(sp.mr), 2), `along rings ${mm(S.p*Math.abs(sp.mt), 2)}`, 'B pitch for an exact match at this point.', true) +
-      tile('Local moiré', mm(sp.Mr, 0), `along rings ${mm(sp.Mt, 0)}`) +
-      tile('Incidence / refraction', `${i.toFixed(1)}° / ${rr.toFixed(1)}°`, `n = ${S.n.toFixed(3)}`) +
-      tile('Front point P', mm(r.P[0], 1), `arc ${mm(arc, 1)} from vertex`) +
-      tile('Back point Q', mm(r.Q[0], 1), r.plane ? 'on the plane' : 'on the curved back') +
-      tile('Path in glass', mm(Math.hypot(r.Q[0]-r.P[0], r.Q[1]-r.P[1], r.Q[2]-r.P[2]), 1), `z of Q = ${mm(r.Q[2], 0)}`);
-  } else {
-    $('probeTiles').innerHTML = tile('Probe ray', 'not visible', 'misses the glass from this eye');
+  m.relN = paraxialK(cfg.kind, R, S.c, cfg.n + 0.01, de.inf, de.Dr, cfg.t).m0 / o.parD.m0 - 1;
+  m.dA = de.inf ? 20 : de.Dr / 2; m.dB = de.inf ? 10 : de.Dr * 2;
+  m.mA = paraxialK(cfg.kind, R, S.c, cfg.n, false, m.dA, cfg.t).m0 / o.parD.m0 - 1;
+  m.mB = paraxialK(cfg.kind, R, S.c, cfg.n, false, m.dB, cfg.t).m0 / o.parD.m0 - 1;
+  // how much the scale varies over the front (both directions, up to 0.7 R)
+  let lo = Infinity, hi = -Infinity;
+  for (let x = 0.01*R; x <= 0.7*Math.min(R, frontXmax(cfg)); x += 0.01*R){
+    const s = sampleAt(o, x); if (!s) continue;
+    lo = Math.min(lo, s.mr, s.mt); hi = Math.max(hi, s.mr, s.mt);
   }
-  $('fParax').innerHTML = `n / s′ = (n − 1) / R − 1 / D &nbsp;&nbsp; m₀ = 1 − L / s′<br>now: s′ = ${mm(parD.s, 0)}, L = ${mm(parD.L, 0)}, m₀ = ${parD.m0.toFixed(3)}`;
+  m.spread = isFinite(lo) ? (hi - lo) / Math.abs(o.parD.m0) : NaN;
+  const ps = o.parD.s;
+  m.fV = cfg.kind === 'planes' ? 'none' : !isFinite(ps) ? '∞' : mm(ps, 0);
+  m.fN = cfg.kind === 'planes' ? 'flat front, no lens' : !isFinite(ps) ? 'rays stay parallel' : ps < 0 ? 'virtual, rays diverge' :
+    ps < o.parD.L - 1e-6 ? 'inside, before the back' : Math.abs(ps - o.parD.L) < 1e-6 ? 'on the back' : 'beyond the back';
+  return m;
+}
+const esc = s => String(s).replace(/"/g, '&quot;');
+const strip = s => String(s).replace(/<[^>]+>/g, '');
+const tile = (label, value, note = '', title = '', key = false) =>
+  `<div class="tile${key ? ' key' : ''}" title="${esc(title || (label + ': ' + strip(value) + (note ? ', ' + strip(note) : '')))}"><div class="tl">${label}</div><div class="tv">${value}</div><div class="tn">${note || '&nbsp;'}</div></div>`;
+const extFr = (x) => Math.abs(x) < 1e-6 ? '∞' : mm(S.p / Math.abs(x), 0);
+
+function statsHTML(ms){
+  const R = S.R, xProbe = S.probe * 0.995 * frontXmax(PRIMARY.cfg);
+  if (ms.length === 1){
+    const m = ms[0], o = m.o, planes = o.kind === 'planes';
+    let h = `<div class="cardhead"><h2>${planes ? 'Centre of the layers' : 'Centre of the sphere'}</h2><span class="hint">on the axis</span></div><div class="tiles">` +
+      tile('Centre scale m₀', o.parD.m0.toFixed(3), `B = ${Math.abs(o.parD.m0*100).toFixed(1)} % of A${o.parD.m0 < 0 ? ', inverted' : ''}`, 'Scale of B relative to A at the centre, design eye (paraxial).', true) +
+      tile('Moiré period', mm(m.M0, 0), `design ${mm(m.Mdes, 0)}`, 'Fringe spacing at the centre for the current eye, and for the design eye.', true) +
+      tile('Scale spread', pct(m.spread, 0).replace('+', ''), 'over 0 to 0.7 R', 'How much the needed scale varies across the front, both directions.') +
+      tile('Matchable radius', mm(o.LUT.xpMax, 0), o.LUT.folded ? 'map folds beyond' : 'to the edge') +
+      tile('Scale now', m.c0 ? m.c0.mr.toFixed(3) : '—', 'current eye, traced') +
+      tile(planes ? 'Offset t' : 'Axial thickness L', mm(o.parD.L, 0), planes ? (o.cfg.n > 1.0001 ? `glass, n = ${o.cfg.n.toFixed(2)}` : 'air between') : 'L = R + c') +
+      tile(planes ? 'Layer Ø' : 'Back plane Ø', (o.cfg.full ? 'full sphere' : mm(2*backRadius(o.cfg), 0)), planes ? 'both layers' : (o.cfg.full ? 'B on curved back' : `rim at c = ${mm(o.cfg.c, 0)}`)) +
+      tile('Focus F′ from front', m.fV, m.fN) +
+      tile('Fringe drift', m.driftV, m.driftN, 'How far the fringes at the centre move when the visitor moves.') +
+      tile('If n is 0.01 higher', pct(m.relN, 1), `extra fringes ${extFr(m.relN)}`) +
+      tile('Eye at ½× / 2×', `${pct(m.mA, 0)} / ${pct(m.mB, 0)}`, `${mm(m.dA*R, 0)} / ${mm(m.dB*R, 0)}`, 'Change of the centre scale with the eye at half or double the design distance.') +
+      '</div>';
+    const sp = sampleAt(o, xProbe);
+    h += `<div class="cardhead" style="margin-top:12px"><h2>Probe ray</h2><span class="hint">at x = ${mm(xProbe, 1)}</span></div><div class="tiles">`;
+    if (sp){
+      const r = sp.r0, i = Math.acos(Math.min(1, r.cosi)) / D2R, rr = Math.acos(Math.min(1, r.cost)) / D2R;
+      const arc = planes ? r.P[0] : R * Math.asin(Math.min(1, Math.abs(r.P[0]) / R)) * Math.sign(r.P[0]);
+      h += tile('Scale m_r / m_t', `${sp.mr.toFixed(3)} / ${sp.mt.toFixed(3)}`, 'across / along rings', '', true) +
+        tile('B pitch needed', mm(S.p*Math.abs(sp.mr), 2), `along rings ${mm(S.p*Math.abs(sp.mt), 2)}`, '', true) +
+        tile('Local moiré', mm(sp.Mr, 0), `along rings ${mm(sp.Mt, 0)}`) +
+        tile('Incidence / refraction', `${i.toFixed(1)}° / ${rr.toFixed(1)}°`, `n = ${o.cfg.n.toFixed(3)}`) +
+        tile('Front point P', mm(r.P[0], 1), planes ? 'on the front layer' : `arc ${mm(arc, 1)} from vertex`) +
+        tile('Back point Q', mm(r.Q[0], 1), r.plane ? 'on the back layer' : (planes ? 'off the back layer' : 'on the curved back')) +
+        tile('Path between layers', mm(Math.hypot(r.Q[0]-r.P[0], r.Q[1]-r.P[1], r.Q[2]-r.P[2]), 1), '');
+    } else h += tile('Probe ray', 'not visible', 'misses from this eye');
+    return h + '</div>';
+  }
+  // compare table
+  const row = (label, f, title = '') => `<tr title="${esc(title)}"><td>${label}</td>${ms.map(m => `<td>${f(m)}</td>`).join('')}</tr>`;
+  const sps = ms.map(m => sampleAt(m.o, xProbe));
+  let h = `<div class="cardhead"><h2>Sphere vs two planes</h2><span class="hint">same artwork A, same eye</span></div><div class="cmpwrap"><table class="cmp"><thead><tr><th></th>${ms.map(m => `<th>${m.o.name}</th>`).join('')}</tr></thead><tbody>` +
+    row('Centre scale m₀', m => m.o.parD.m0.toFixed(3), 'Scale of B relative to A at the centre, design eye.') +
+    row('Scale spread 0–0.7 R', m => pct(m.spread, 0).replace('+', '')) +
+    row('Matchable radius', m => mm(m.o.LUT.xpMax, 0)) +
+    row('Moiré period now', m => mm(m.M0, 0)) +
+    row('Moiré, design eye', m => mm(m.Mdes, 0)) +
+    row('Slip / 10 mm step', m => mm(m.slip, 2), 'How far B slides against A at the centre when the visitor steps sideways.') +
+    row('Fringe drift / 10 mm step', m => m.driftV) +
+    row('Depth A to B', m => mm(m.o.parD.L, 0)) +
+    row('Scale if n + 0.01', m => pct(m.relN, 1)) +
+    row('Scale, eye at ½×', m => pct(m.mA, 0)) +
+    row('Scale, eye at 2×', m => pct(m.mB, 0)) +
+    `<tr><td colspan="${ms.length + 1}" style="text-align:left;color:var(--ink);font-weight:600;padding-top:10px">Probe ray at x = ${mm(xProbe, 1)}</td></tr>` +
+    `<tr><td>Scale m_r / m_t</td>${sps.map(s => `<td>${s ? `${s.mr.toFixed(3)} / ${s.mt.toFixed(3)}` : '—'}</td>`).join('')}</tr>` +
+    `<tr><td>Local moiré</td>${sps.map(s => `<td>${s ? mm(s.Mr, 0) : '—'}</td>`).join('')}</tr>` +
+    `<tr><td>Incidence / refraction</td>${sps.map(s => `<td>${s ? `${(Math.acos(Math.min(1, s.r0.cosi))/D2R).toFixed(1)}° / ${(Math.acos(Math.min(1, s.r0.cost))/D2R).toFixed(1)}°` : '—'}</td>`).join('')}</tr>` +
+    '</tbody></table></div>';
+  return h;
+}
+
+function updateNumbers(){
+  const sets = OBJS.map(o => {
+    const xmax = frontXmax(o.cfg), samples = [];
+    for (let i = 0; i < 241; i++){
+      const x = -0.99*xmax + 1.98*xmax*i/240, sm = sampleAt(o, x);
+      samples.push(sm ? Object.assign({ x, ok: true }, sm) : { x, ok: false });
+    }
+    const m = metrics(o);
+    return { o, samples, Mdes: m.Mdes, m };
+  });
+  drawChart(sets);
+  const pm = sets[0].m;
+  drawBeat(isFinite(pm.p2c) ? pm.p2c : S.p, pm.M0);
+  $('statsBody').innerHTML = statsHTML(sets.map(s => s.m));
+  const sph = objOf('sphere'), pl = objOf('planes');
+  const ps = sph ? sph.parD : paraxialK('sphere', S.R, S.c, S.n, designEye().inf, designEye().Dr, S.t);
+  $('fParax').innerHTML = `n / s′ = (n − 1) / R − 1 / D &nbsp;&nbsp; m₀ = 1 − L / s′<br>now: s′ = ${mm(ps.s, 0)}, L = ${mm(ps.L, 0)}, m₀ = ${ps.m0.toFixed(3)}`;
+  const pp = pl ? pl.parD : paraxialK('planes', S.R, S.c, S.gapN, designEye().inf, designEye().Dr, S.t);
+  $('fPlanes').innerHTML = `m₀ = 1 + t / (n · D)<br>now: t = ${mm(S.t, 0)}, n = ${S.gapN.toFixed(2)}, m₀ = ${pp.m0.toFixed(3)}`;
   if (!AN.on) updateExport();
 }
 
 function updateExport(){
-  const R = cfgD.R, L = LUT, de = designEye();
+  const o = PRIMARY, cfgD = o.cfgD, R = cfgD.R, L = o.LUT, de = designEye();
   const eyeTxt = de.inf ? 'far away' : `${(de.Dr*R).toFixed(0)} mm from the front`;
-  $('exportHead').textContent = `Design eye on axis, ${eyeTxt}. R = ${R} mm, c = ${(S.c*R).toFixed(1)} mm, n = ${S.n}. Radii are distances from the axis; front radii are in axial projection. A negative back radius means the point lands on the opposite side of the axis (inverted image).`;
+  const geo = o.kind === 'planes' ? `two planes, offset t = ${S.t.toFixed(1)} mm, ${cfgD.n > 1.0001 ? 'glass n = ' + cfgD.n : 'air'} between` : `sphere R = ${R} mm, c = ${(S.c*R).toFixed(1)} mm, n = ${S.n}`;
+  $('exportHead').textContent = `${o.name}${S.object === 'compare' ? ' (choose “Two planes” at the top to export that map)' : ''}. Design eye on axis, ${eyeTxt}; ${geo}. Radii are distances from the axis; front radii are in axial projection. A negative back radius means the point lands on the opposite side of the axis (inverted image).`;
   let csv = 'r_front_mm,arc_front_mm,r_back_mm,back_surface,scale_radial,scale_tangential\n';
   if (L.xp.length > 2){
     const rows = 40;
     for (let i = 0; i <= rows; i++){
       const x = Math.max(1e-6, L.xpMax * i / rows), h = 1e-4 * R;
-      const r0 = traceFromP(cfgD, frontPoint(R, x, 0)), rp = traceFromP(cfgD, frontPoint(R, x + h, 0)),
-            rm = traceFromP(cfgD, frontPoint(R, Math.max(0, x - h), 0));
+      const r0 = traceFromP(cfgD, frontPoint(cfgD, x, 0)), rp = traceFromP(cfgD, frontPoint(cfgD, x + h, 0)),
+            rm = traceFromP(cfgD, frontPoint(cfgD, Math.max(0, x - h), 0));
       if (!r0) continue;
       const mr = (rp && rm) ? (rp.Q[0] - rm.Q[0]) / (x + h - Math.max(0, x - h)) : NaN;
       const mt = i === 0 ? mr : r0.Q[0] / x;
-      csv += [x.toFixed(3), (R*Math.asin(Math.min(1, x/R))).toFixed(3), r0.Q[0].toFixed(3), r0.plane ? 'plane' : 'sphere', mr.toFixed(5), mt.toFixed(5)].join(',') + '\n';
+      const arc = o.kind === 'planes' ? x : R*Math.asin(Math.min(1, x/R));
+      csv += [x.toFixed(3), arc.toFixed(3), r0.Q[0].toFixed(3), r0.plane ? 'plane' : (o.kind === 'planes' ? 'off-layer' : 'sphere'), mr.toFixed(5), mt.toFixed(5)].join(',') + '\n';
     }
   }
   $('csv').value = csv;
   let A = [1, 0, 0, 0], rbMax = 2*R, fitTxt = '';
   if (S.mode === 'uniform'){
-    A = [1 / S.k, 0, 0, 0];
-    fitTxt = `Uniform B: scale A by k · (1 + ε) = ${(S.k*(1+S.epsBase)).toFixed(4)}${S.dthBase ? ` and rotate by ${S.dthBase}°` : ''}.`;
+    const k = kOf(o); A = [1 / k, 0, 0, 0];
+    fitTxt = `Uniform B: scale A by k · (1 + ε) = ${(k*(1+S.epsBase)).toFixed(4)}${S.dthBase ? ` and rotate by ${S.dthBase}°` : ''}.`;
   } else if (L.rho.length > 10){
     const sub = arr => arr.filter((_, i) => i % 3 === 0);
     const fb = oddFit(sub(L.rho), sub(L.xp).map(v => v * L.s0));
@@ -1065,10 +1247,9 @@ function updateExport(){
   const fmtc = v => v.toExponential(8);
   $('py').textContent =
 `# Makes artwork B (back) from artwork A (front).
-# Geometry: R=${R} mm, c=${(S.c*R).toFixed(1)} mm, n=${S.n}, design eye ${eyeTxt}
-# A: flat greyscale image of pattern A, centred on the axis, A_MM wide,
-#    wrapped onto the front by projection along the axis.
-# B: as seen from the front through the glass (mirror it if printed from behind).
+# ${o.name}: ${geo}; design eye ${eyeTxt}
+# A: flat greyscale image of pattern A, centred on the axis, A_MM wide${o.kind === 'sphere' ? ',\n#    wrapped onto the front by projection along the axis' : ''}.
+# B: as seen from the front (mirror it if printed from behind).
 import numpy as np
 from PIL import Image
 
@@ -1098,7 +1279,7 @@ Image.fromarray(out.astype(np.uint8)).save("B.png")
 
 /* ---------- outputs ---------- */
 const NOTES = {
-  walk: 'Real with fixed prints: a visitor walking toward and away from the sphere.',
+  walk: 'Real with fixed prints: a visitor walking toward and away from the piece.',
   sway: 'Real with fixed prints: a visitor stepping sideways.',
   breathe: 'Detune swells and shrinks: needs a back layer that changes size, such as a display or projection.',
   rotate: 'Back layer turns back and forth: needs a motorised back disc.',
@@ -1107,20 +1288,21 @@ const NOTES = {
 function updateOutputs(){
   $('cO').textContent = S.c >= 0.9995 ? 'full sphere' : `${S.c.toFixed(3)} (${mm(S.c*S.R, 1)})`;
   $('nO').textContent = S.n.toFixed(3);
+  $('tO').textContent = `${mm(S.t, 0)} (${(S.t/S.R).toFixed(2)} R)`;
   $('DO').textContent = S.Dinf ? '∞' : `${mm(S.DrBase*S.R, 0)} (${S.DrBase.toFixed(2)} R)`;
   $('alphaO').textContent = `${f1(S.alphaBase)}°`;
   $('raysO').textContent = S.rays;
-  $('probeO').textContent = mm(S.probe * 0.995 * frontXmax(cfg), 1);
+  $('probeO').textContent = mm(S.probe * 0.995 * frontXmax(PRIMARY.cfg), 1);
   $('pO').textContent = mm(S.p, 1);
   $('dutyO').textContent = Math.round(S.duty*100) + ' %';
   $('thO').textContent = S.th + '°';
-  $('kO').textContent = S.k.toFixed(3);
+  $('kO').textContent = S.autoK ? OBJS.map(o => kOf(o).toFixed(3)).join(' / ') : S.k.toFixed(3);
   $('epsO').textContent = pct(S.epsBase, 1);
   $('dthO').textContent = f1(S.dthBase) + '°';
   $('zoomO').textContent = S.zoom.toFixed(2) + '×';
   const de = designEye();
   $('designNote').textContent = `B is designed for an eye on the axis, ${de.inf ? 'far away' : mm(de.Dr*S.R, 0) + ' from the front'}${S.lock ? ' (locked)' : ', following the viewer distance'}.`;
-  $('k').disabled = S.mode !== 'uniform'; $('kBtn').disabled = S.mode !== 'uniform';
+  $('k').disabled = S.mode !== 'uniform' || S.autoK; $('autoK').disabled = S.mode !== 'uniform';
   $('viewHint').textContent = (S.Dinf ? 'eye far away' : `eye ${mm(S.Dr*S.R, 0)}`) + (Math.abs(S.alpha) > 0.05 ? `, ${f1(S.alpha)}°` : ', on axis');
   const mode = $('animMode').value, amt = +$('animAmt').value;
   $('animAmtO').textContent = {
@@ -1145,8 +1327,12 @@ function schedule(fast){
   if (fast) idle = setTimeout(() => schedule(false), 200);
 }
 function frame(fast){
-  compute(); updateOutputs(); drawSection(); updateNumbers();
-  renderView(fast || AN.on ? 1 : S.q);
+  compute(); updateOutputs();
+  for (const o of OBJS){
+    drawSection(o, $(o.kind === 'sphere' ? 'secS' : 'secP'));
+    renderView(o, $(o.kind === 'sphere' ? 'viewS' : 'viewP'), fast || AN.on ? 1 : S.q);
+  }
+  updateNumbers();
   renderArt();
 }
 
@@ -1177,16 +1363,16 @@ $('play').addEventListener('click', e => {
 ['animMode', 'animAmt', 'animPer'].forEach(id => $(id).addEventListener('input', () => { if (!AN.on) schedule(true); }));
 
 /* ---------- wiring ---------- */
-document.querySelectorAll('aside input, aside select, #layersCard input').forEach(el => {
+document.querySelectorAll('aside input, aside select, #layersCard input, input[name=obj]').forEach(el => {
   if (el.id === 'nPreset') return;
   el.addEventListener('input', () => schedule(true));
   el.addEventListener('change', () => schedule(false));
 });
+$('t').addEventListener('input', () => { $('tLink').checked = false; });
 $('nPreset').addEventListener('change', e => { if (e.target.value){ $('n').value = e.target.value; schedule(false); } e.target.value = ''; });
 $('fullBtn').addEventListener('click', () => { $('c').value = 1; schedule(false); });
 $('hemiBtn').addEventListener('click', () => { $('c').value = 0; schedule(false); });
 $('imgBtn').addEventListener('click', () => { $('c').value = 0.79; schedule(false); });
-$('kBtn').addEventListener('click', () => { $('k').value = Math.max(-1.2, Math.min(1.5, parD.m0)).toFixed(3); schedule(false); });
 $('lock').addEventListener('change', e => { if (e.target.checked){ S.D0r = dFromT(+$('D').value); S.D0inf = $('Dinf').checked; } schedule(false); });
 $('panelBtn').addEventListener('click', e => {
   const hidden = document.body.classList.toggle('nopanel');
@@ -1205,7 +1391,6 @@ async function copyFrom(text, fallbackEl){
 $('copyCsv').addEventListener('click', () => copyFrom($('csv').value, $('csv')));
 $('copyPy').addEventListener('click', () => copyFrom($('py').textContent, $('py')));
 
-// header height drives the one-screen layout
 new ResizeObserver(() => document.documentElement.style.setProperty('--hdr', $('top').offsetHeight + 'px')).observe($('top'));
 
 // canvases and the chart follow the size of their boxes
@@ -1216,18 +1401,19 @@ const sizeObs = new ResizeObserver(entries => {
     if (side < 40) continue;
     const cv = e.target.querySelector('canvas');
     if (cv){
-      const px = cv.id === 'view' ? Math.min(680, side) : Math.min(560, Math.round(side * Math.min(2, window.devicePixelRatio || 1)));
+      const isView = cv.id.startsWith('view');
+      const px = isView ? Math.min(640, side) : Math.min(560, Math.round(side * Math.min(2, window.devicePixelRatio || 1)));
       if (cv.width !== px){ cv.width = px; cv.height = px; dirty = true; }
     } else dirty = true;
   }
-  if (dirty && cfg) schedule(false);
+  if (dirty && PRIMARY) schedule(false);
 });
-['viewFit', 'chartFit'].forEach(id => sizeObs.observe($(id)));
-document.querySelectorAll('.art .fit').forEach(el => sizeObs.observe(el));
+sizeObs.observe($('chartFit'));
+document.querySelectorAll('#viewWrap .pane, .art .fit').forEach(el => sizeObs.observe(el));
 
 if (window.innerWidth < 900){ document.body.classList.add('nopanel'); $('panelBtn').setAttribute('aria-pressed', 'false'); }
 compute();
-$('k').value = Math.max(-1.2, Math.min(1.5, parD.m0)).toFixed(3);
+$('k').value = Math.max(-1.2, Math.min(1.5, PRIMARY.parD.m0)).toFixed(3);
 schedule(false);
 </script>
 </body>
