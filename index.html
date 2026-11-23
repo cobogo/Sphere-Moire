@@ -344,7 +344,7 @@ svg text{font-family:var(--mono)}
   <details>
     <summary>Section and display</summary>
     <div class="ctl"><label for="rays">Number of rays</label><output id="raysO"></output>
-      <input id="rays" type="range" min="3" max="41" step="2" value="15"></div>
+      <input id="rays" type="range" min="5" max="61" step="2" value="25"></div>
     <div class="ctl"><label for="probe">Probe ray position</label><output id="probeO"></output>
       <input id="probe" type="range" min="-1" max="1" step="0.005" value="0.45"></div>
     <div class="row seg" role="radiogroup" aria-label="Layers shown">
@@ -385,6 +385,7 @@ svg text{font-family:var(--mono)}
     <div class="legend">
       <span><i class="ln" style="background:var(--rayout)"></i>sight line in air</span>
       <span><i class="ln" style="background:var(--rayin)"></i>between the layers</span>
+      <span><i class="ln" style="background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 5px)"></i>outside the printed area</span>
       <span><i class="dot" style="background:var(--front)"></i>P on A, front</span>
       <span><i class="dot" style="background:var(--back)"></i>Q on B, back</span>
     </div>
@@ -783,16 +784,34 @@ function drawSection(o, el){
   g += `<line x1="${cx}" y1="8" x2="${cx}" y2="592" stroke="var(--muted)" stroke-opacity=".5" stroke-dasharray="8 4 2 4"/>`;
   if (!planes) g += `<circle cx="${cx}" cy="${cy}" r="2.5" fill="var(--ink)"/><text x="${cx+6}" y="${cy-6}" class="lbl">C</text>`;
 
-  const xmax = o.rA, N = S.rays;
-  let out = '', ins = '', marks = '';
-  for (let i = 0; i < N; i++){
-    const x = -0.97*xmax + 1.94*xmax*i/(N-1);
-    const r = traceFromP(cfg, frontPoint(cfg, x, 0)); if (!r) continue;
-    const P = r.P, Q = r.Q, d = r.d, far = 3*R;
-    out += `<line x1="${X(P[0]-d[0]*far)}" y1="${Y(P[2]-d[2]*far)}" x2="${X(P[0])}" y2="${Y(P[2])}"/>`;
-    ins += `<line x1="${X(P[0])}" y1="${Y(P[2])}" x2="${X(Q[0])}" y2="${Y(Q[2])}"/>`;
-    marks += `<circle cx="${X(P[0])}" cy="${Y(P[2])}" r="2.4" fill="var(--front)"/><circle cx="${X(Q[0])}" cy="${Y(Q[2])}" r="2.4" fill="var(--back)"${planes && !r.plane ? ' fill-opacity=".35"' : ''}/>`;
+  // rays over the whole part of the front the eye can see, not only A's printed area
+  const fx = frontXmax(cfg), xmax = o.rA, N = S.rays;
+  let vLo = Infinity, vHi = -Infinity;
+  for (let i = 0; i <= 400; i++){
+    const x = -fx + 2*fx*i/400;
+    if (traceFromP(cfg, frontPoint(cfg, x, 0))){ vLo = Math.min(vLo, x); vHi = Math.max(vHi, x); }
   }
+  let out = '', ins = '', outB = '', insB = '', marks = '';
+  if (vHi > vLo){
+    const m = (vHi - vLo) * 0.005;
+    for (let i = 0; i < N; i++){
+      const x = (vLo + m) + (vHi - vLo - 2*m) * i / (N - 1);
+      const r = traceFromP(cfg, frontPoint(cfg, x, 0)); if (!r) continue;
+      const P = r.P, Q = r.Q, d = r.d, far = 3*R, onA = Math.abs(x) <= o.rA + 1e-9;
+      const lo = `<line x1="${X(P[0]-d[0]*far)}" y1="${Y(P[2]-d[2]*far)}" x2="${X(P[0])}" y2="${Y(P[2])}"/>`;
+      const li = `<line x1="${X(P[0])}" y1="${Y(P[2])}" x2="${X(Q[0])}" y2="${Y(Q[2])}"/>`;
+      if (onA){ out += lo; ins += li; } else { outB += lo; insB += li; }
+      const fade = (planes && !r.plane) || !onA;
+      marks += onA
+        ? `<circle cx="${X(P[0])}" cy="${Y(P[2])}" r="2.4" fill="var(--front)"/>`
+        : `<circle cx="${X(P[0])}" cy="${Y(P[2])}" r="2.2" fill="var(--panel)" stroke="var(--front)" stroke-width=".9"/>`;
+      marks += fade
+        ? `<circle cx="${X(Q[0])}" cy="${Y(Q[2])}" r="2.2" fill="var(--panel)" stroke="var(--back)" stroke-width=".9"/>`
+        : `<circle cx="${X(Q[0])}" cy="${Y(Q[2])}" r="2.4" fill="var(--back)"/>`;
+    }
+  }
+  g += `<g stroke="var(--rayout)" stroke-width=".6" stroke-opacity=".55">${outB}</g>`;
+  g += `<g stroke="var(--rayin)" stroke-width=".6" stroke-opacity=".4" stroke-dasharray="3 2">${insB}</g>`;
   g += `<g stroke="var(--rayout)" stroke-width=".6">${out}</g>`;
   g += `<g stroke="var(--rayin)" stroke-width=".75" stroke-opacity=".85">${ins}</g>`;
 
