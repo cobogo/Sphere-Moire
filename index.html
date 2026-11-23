@@ -239,6 +239,7 @@ pre{margin:0;overflow-x:auto;background:transparent;border:1px solid var(--rule)
 svg text{font-family:var(--mono)}
 .lbl{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 .lblk{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+body:not([data-bdesign="sun"]) .sunctl{display:none}
 </style>
 </head>
 <body data-obj="sphere">
@@ -341,6 +342,33 @@ svg text{font-family:var(--mono)}
       <input id="bR" type="range" min="0.05" max="1" step="0.005" value="0.4"></div>
   </details>
 
+  <details open>
+    <summary>Designed B</summary>
+    <div class="row"><label for="bDesign">B pattern</label><select id="bDesign">
+      <option value="copy" selected>Copy of A (matched)</option>
+      <option value="sun">Sun spots (Voronoi)</option>
+    </select></div>
+    <div class="sunctl">
+      <div class="ctl"><label for="sCells">Cells</label><output id="sCellsO"></output>
+        <input id="sCells" type="range" min="3" max="300" step="1" value="40"></div>
+      <div class="ctl"><label for="sSeed">Seed</label><output id="sSeedO"></output>
+        <input id="sSeed" type="range" min="1" max="99" step="1" value="2"></div>
+      <div class="ctl"><label for="sBias">Smaller cells toward the rim</label><output id="sBiasO"></output>
+        <input id="sBias" type="range" min="0" max="1" step="0.01" value="0.5"></div>
+      <div class="ctl"><label for="sAmp">Organic cell edges</label><output id="sAmpO"></output>
+        <input id="sAmp" type="range" min="0" max="1" step="0.01" value="0.4"></div>
+      <div class="ctl"><label for="sRnd">Random phase per cell</label><output id="sRndO"></output>
+        <input id="sRnd" type="range" min="0" max="1" step="0.01" value="1"></div>
+      <div class="ctl"><label for="sFac">Spot strength</label><output id="sFacO"></output>
+        <input id="sFac" type="range" min="0" max="3" step="0.05" value="1"></div>
+      <div class="ctl"><label for="sCMin">Centre factor min (1 = off)</label><output id="sCMinO"></output>
+        <input id="sCMin" type="range" min="0" max="1" step="0.01" value="0.1"></div>
+      <div class="ctl"><label for="sBMin">Edge factor min (1 = off)</label><output id="sBMinO"></output>
+        <input id="sBMin" type="range" min="0" max="1" step="0.01" value="0"></div>
+      <p class="hint">B is the A grating shifted inside each Voronoi cell: a random phase per cell plus a sweep from centre to edge, which makes the rings. Set detune ε to 0 so the straight A acts as the reference. The cells sit in A’s coordinates, so the pre-distortion still maps them through the lens.</p>
+    </div>
+  </details>
+
   <details>
     <summary>Section and display</summary>
     <div class="ctl"><label for="rays">Number of rays</label><output id="raysO"></output>
@@ -392,7 +420,7 @@ svg text{font-family:var(--mono)}
   </section>
 
   <section class="card" id="viewCard">
-    <div class="cardhead"><h2>View from the eye</h2><span class="hint" id="viewHint"></span></div>
+    <div class="cardhead"><h2>View from the eye</h2><span class="hint" id="viewHint"></span><label class="hint" style="white-space:nowrap" title="Soften the fine lines into tones, as the eye sees them from a distance. Useful for judging sun spots."><input id="tones" type="checkbox"> Tones</label></div>
     <div class="duoWrap" id="viewWrap"><div class="duo">
       <div class="pane is-sphere"><span class="tag">Sphere</span><canvas id="viewS" width="420" height="420" aria-label="Ray-traced view through the sphere"></canvas></div>
       <div class="pane is-planes"><span class="tag">Two planes</span><canvas id="viewP" width="420" height="420" aria-label="Ray-traced view through the two planes"></canvas></div>
@@ -473,6 +501,11 @@ svg text{font-family:var(--mono)}
       <p>Small detune ε: M ≈ p / ε. Small rotation: M ≈ p / Δθ (radians). Fringes magnify any slip between the layers by M / p.</p>
       <canvas id="beat" width="640" height="96" aria-label="Beat between the two gratings at the centre"></canvas>
       <div class="beatlbl"><span>top: A, middle: B as seen, bottom: both</span><span id="beatInfo"></span></div>
+    </div>
+    <div>
+      <h3>Designed B: sun spots</h3>
+      <p>A stays a plain grating. B is the same grating, but shifted inside each Voronoi cell: a random amount per cell, which gives every cell its own tone, plus a shift that grows from the cell centre to its edge, which draws concentric light and dark rings. Seen through A, each cell reads as a glowing spot.</p>
+      <p>The cells are defined in A’s coordinates and B is still pre-distorted, so the spots land where you put them on the sphere. As the visitor moves, the parallax adds to every cell’s phase and the spots ripple.</p>
     </div>
     <div>
       <h3>Pulsing</h3>
@@ -662,6 +695,9 @@ function read(){
   S.alphaBase = +$('alpha').value; S.alpha = S.alphaBase + o.alpha;
   S.rays = +$('rays').value; S.probe = +$('probe').value;
   S.aFrac = +$('aR').value; S.bArea = $('bArea').value; S.bFrac = +$('bR').value;
+  S.bDesign = $('bDesign').value; S.sCells = Math.max(3, +$('sCells').value); S.sSeed = +$('sSeed').value;
+  S.sBias = +$('sBias').value; S.sAmp = +$('sAmp').value; S.sRnd = +$('sRnd').value; S.sFac = +$('sFac').value;
+  S.sCMin = +$('sCMin').value; S.sBMin = +$('sBMin').value;
   S.pat = $('pat').value; S.p = +$('p').value; S.duty = +$('duty').value; S.th = +$('th').value;
   S.mode = radio('mode'); S.autoK = $('autoK').checked;
   S.k = +$('k').value; if (Math.abs(S.k) < 0.01) S.k = 0.01 * (Math.sign(S.k) || 1);
@@ -670,9 +706,9 @@ function read(){
   S.lock = $('lock').checked;
   S.show = radio('show'); S.ink = radio('ink');
   S.zoom = +$('zoom').value; S.q = +$('q').value;
-  S.artScale = radio('artScale'); S.mirror = $('mirror').checked;
+  S.artScale = radio('artScale'); S.mirror = $('mirror').checked; S.tones = $('tones').checked;
 }
-const f1 = (x, d = 1) => !isFinite(x) ? (x > 0 ? '∞' : '−∞') : x.toFixed(d).replace('-', '−');
+const f1 = (x, d = 1) => (!isFinite(x) || Math.abs(x) >= 1e6) ? (x > 0 ? '∞' : '−∞') : x.toFixed(d).replace('-', '−');
 const mm = (x, d = 1) => f1(x, d) + ' mm';
 const pct = (x, d = 1) => !isFinite(x) ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(d) + ' %';
 
@@ -702,6 +738,7 @@ let OBJS = [], PRIMARY = null;
 function compute(){
   read();
   document.body.dataset.obj = S.object;
+  document.body.dataset.bdesign = S.bDesign;
   OBJS = (S.object === 'compare' ? ['sphere', 'planes'] : [S.object]).map(makeObj);
   PRIMARY = OBJS[0];
 }
@@ -723,6 +760,65 @@ function inkFn(type, p, duty, thDeg, phase){
   return (x, y) => { const u = (Math.atan2(y, x) + Math.PI*2 + thDeg*D2R) / (Math.PI*2) * ns + ph; return u - Math.floor(u) < duty; };
 }
 // B as printed: 1 ink, 0 clear, -1 no match possible. (x, y) on the back, seen from the front.
+/* ---------- designed B: sun spots (Voronoi phase field in A's coordinates) ---------- */
+const SUN = { key: '', G: 0, D: 1, step: 1, map: null, seeds: [] };
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function sunMap(){
+  const D = PRIMARY.rA * 1.08;
+  const key = [S.sCells, S.sSeed, S.sBias, S.sAmp, S.sRnd, S.sFac, S.sCMin, S.sBMin, D.toFixed(3)].join('|');
+  if (SUN.key === key) return SUN;
+  const rnd = mulberry32(S.sSeed * 9973 + 17), N = S.sCells, seeds = [], expo = 1 / (2 + 6 * S.sBias);
+  // seeds: best-candidate sampling (blue noise), denser toward the rim
+  for (let i = 0; i < N; i++){
+    let best = null, bestScore = -1;
+    for (let c = 0; c < 12; c++){
+      const r = D * Math.pow(rnd(), expo), a = rnd() * 2 * Math.PI, x = r * Math.cos(a), y = r * Math.sin(a);
+      const spacing = 1 - 0.65 * S.sBias * (r / D);
+      let md = Infinity; for (const s of seeds){ const d = Math.hypot(x - s[0], y - s[1]); if (d < md) md = d; }
+      if (md / spacing > bestScore){ bestScore = md / spacing; best = [x, y]; }
+    }
+    best.push(rnd() - 0.5);                       // random phase of the cell, in cycles
+    seeds.push(best);
+  }
+  const G = 512, map = new Float32Array(G * G), step = 2 * D / G;
+  const amp = S.sAmp * D * 0.05, f = 6.2 / D, ph = [rnd() * 6.28, rnd() * 6.28, rnd() * 6.28, rnd() * 6.28];
+  const pmin = S.sCMin * S.sBMin, prange = 1 - pmin;
+  for (let j = 0; j < G; j++) for (let i = 0; i < G; i++){
+    let x = -D + (i + 0.5) * step, y = D - (j + 0.5) * step;
+    if (amp > 0){
+      const wx = Math.sin(y * f * 1.7 + ph[0]) + 0.5 * Math.sin((x + y) * f * 3.3 + ph[1]);
+      const wy = Math.sin(x * f * 1.9 + ph[2]) + 0.5 * Math.sin((x - y) * f * 2.9 + ph[3]);
+      x += amp * wx; y += amp * wy;
+    }
+    let d1 = Infinity, d2 = Infinity, k1 = 0, k2 = 0;
+    for (let k = 0; k < N; k++){
+      const dx = x - seeds[k][0], dy = y - seeds[k][1], d = dx * dx + dy * dy;
+      if (d < d1){ d2 = d1; k2 = k1; d1 = d; k1 = k; } else if (d < d2){ d2 = d; k2 = k; }
+    }
+    const s1 = seeds[k1], s2 = seeds[k2], dc = Math.sqrt(d1);
+    const sep = Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) || 1;
+    const de = Math.max(0, (d2 - d1) / (2 * sep));          // distance to the cell edge
+    const r = dc / ((dc + de) || 1);                         // 0 at the seed, 1 at the edge
+    const cf = S.sCMin + (1 - S.sCMin) * r, ef = S.sBMin + (1 - S.sBMin) * r;
+    const t = prange > 1e-6 ? (cf * ef - pmin) / prange : 0;
+    map[j * G + i] = s1[2] * S.sRnd + S.sFac * t;
+  }
+  Object.assign(SUN, { key, G, D, step, map, seeds });
+  return SUN;
+}
+function sunPhase(x, y){
+  const m = SUN, i = Math.floor((x + m.D) / m.step), j = Math.floor((m.D - y) / m.step);
+  return (i < 0 || j < 0 || i >= m.G || j >= m.G) ? 0 : m.map[j * m.G + i];
+}
+function inkFnPh(type, p, duty, thDeg, phase, phf){
+  const cs = Math.cos(thDeg*D2R), sn = Math.sin(thDeg*D2R), ph = phase || 0;
+  if (type === 'lines') return (x, y) => { const u = (x*cs + y*sn) / p + ph + phf(x, y); return u - Math.floor(u) < duty; };
+  if (type === 'rings') return (x, y) => { const u = Math.hypot(x, y) / p - ph - phf(x, y); return u - Math.floor(u) < duty; };
+  if (type === 'dots'){ const r2 = duty / Math.PI;
+    return (x, y) => { const u = (x*cs + y*sn)/p + ph + phf(x, y), v = (-x*sn + y*cs)/p; const a = u - Math.round(u), b = v - Math.round(v); return a*a + b*b < r2; }; }
+  const ns = Math.max(8, Math.round(Math.PI * S.R / p));
+  return (x, y) => { const u = (Math.atan2(y, x) + Math.PI*2 + thDeg*D2R) / (Math.PI*2) * ns + ph + phf(x, y); return u - Math.floor(u) < duty; };
+}
 function makeBackSampler(o){
   const base = makeBackSamplerRaw(o);
   if (S.bArea === 'whole') return base;
@@ -730,7 +826,9 @@ function makeBackSampler(o){
   return (x, y) => x*x + y*y > rb2 ? 0 : base(x, y);
 }
 function makeBackSamplerRaw(o){
-  const ink = inkFn(S.pat, S.p, S.duty, S.th + S.dth, S.phase);
+  let ink;
+  if (S.bDesign === 'sun'){ sunMap(); ink = inkFnPh(S.pat, S.p, S.duty, S.th + S.dth, S.phase, sunPhase); }
+  else ink = inkFn(S.pat, S.p, S.duty, S.th + S.dth, S.phase);
   if (S.mode === 'uniform'){ const s = kOf(o) * (1 + S.eps); return (x, y) => ink(x/s, y/s) ? 1 : 0; }
   const L = o.LUT, stp = L.step, uni = L.uni, rmax = L.rhoMax, NU = uni.length - 1, e = 1 + S.eps;
   return (x, y) => {
@@ -1207,7 +1305,7 @@ function metrics(o){
     if (ba && bb2){
       const db = ba[0] - bb2[0], perDeg = S.Dinf ? 1 : 10 / (R * (1 + S.Dr)) / D2R;
       m.slip = Math.abs(db / c0.Jr) * perDeg;
-      if (isFinite(m.M0)){ m.driftV = mm(Math.abs(db) * m.M0 / S.p * perDeg, 1); m.driftN = S.Dinf ? 'per 1° of view angle' : 'per 10 mm sideways step'; }
+      if (isFinite(m.M0) && m.M0 < 1e6){ m.driftV = mm(Math.abs(db) * m.M0 / S.p * perDeg, 1); m.driftN = S.Dinf ? 'per 1° of view angle' : 'per 10 mm sideways step'; }
       else { m.driftV = 'none'; m.driftN = `layers slip ${mm(m.slip, 2)}`; }
     }
   }
@@ -1327,6 +1425,7 @@ function updateExport(){
   const eyeTxt = de.inf ? 'far away' : `${(de.Dr*R).toFixed(0)} mm from the front`;
   const geo = o.kind === 'planes' ? `two planes, offset t = ${S.t.toFixed(1)} mm, ${cfgD.n > 1.0001 ? 'glass n = ' + cfgD.n : 'air'} between` : `sphere R = ${R} mm, c = ${(S.c*R).toFixed(1)} mm, n = ${S.n}`;
   $('exportHead').textContent = `${o.name}${S.object === 'compare' ? ' (choose “Two planes” at the top to export that map)' : ''}. Design eye on axis, ${eyeTxt}; ${geo}. Radii are distances from the axis; front radii are in axial projection. A negative back radius means the point lands on the opposite side of the axis (inverted image).`;
+  if (S.bDesign === 'sun') $('exportHead').textContent += ' Sun spots: feed the script an image of the designed B pattern drawn in A’s coordinates (the shifted grating), not A itself.';
   let csv = 'r_front_mm,arc_front_mm,r_back_mm,back_surface,scale_radial,scale_tangential\n';
   if (L.xp.length > 2){
     const rows = 40;
@@ -1415,6 +1514,16 @@ function updateOutputs(){
     $('bRO').textContent = `Ø ${mm(2*o.rB, 0)}${full ? `, back cap ±${ang.toFixed(0)}°` : ''}`;
     $('bR').disabled = S.bArea !== 'custom'; }
   $('pO').textContent = mm(S.p, 1);
+  // tones: blur the canvas by about half a pitch as it appears on screen
+  for (const id of ['viewS', 'viewP']){
+    const cv = $(id), w = cv.clientWidth || 0;
+    const mag = S.Dinf ? 1 : (S.Dr + 1) / S.Dr, pxmm = w / (2 * S.R * 1.04 / S.zoom) * mag;
+    cv.style.filter = S.tones && w ? `blur(${(0.5 * S.p * pxmm).toFixed(1)}px)` : '';
+  }
+  $('sCellsO').textContent = S.sCells; $('sSeedO').textContent = S.sSeed;
+  $('sBiasO').textContent = Math.round(S.sBias * 100) + ' %'; $('sAmpO').textContent = Math.round(S.sAmp * 100) + ' %';
+  $('sRndO').textContent = `±${(0.5 * S.sRnd).toFixed(2)} p`; $('sFacO').textContent = `${S.sFac.toFixed(2)} cycle${S.sFac === 1 ? '' : 's'}`;
+  $('sCMinO').textContent = S.sCMin.toFixed(2); $('sBMinO').textContent = S.sBMin.toFixed(2);
   $('dutyO').textContent = Math.round(S.duty*100) + ' %';
   $('thO').textContent = S.th + '°';
   $('kO').textContent = S.autoK ? OBJS.map(o => kOf(o).toFixed(3)).join(' / ') : S.k.toFixed(3);
@@ -1484,7 +1593,7 @@ $('play').addEventListener('click', e => {
 ['animMode', 'animAmt', 'animPer'].forEach(id => $(id).addEventListener('input', () => { if (!AN.on) schedule(true); }));
 
 /* ---------- wiring ---------- */
-document.querySelectorAll('aside input, aside select, #layersCard input, input[name=obj]').forEach(el => {
+document.querySelectorAll('aside input, aside select, #layersCard input, #viewCard input, input[name=obj]').forEach(el => {
   if (el.id === 'nPreset') return;
   el.addEventListener('input', () => schedule(true));
   el.addEventListener('change', () => schedule(false));
