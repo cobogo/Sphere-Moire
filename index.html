@@ -66,6 +66,16 @@ select,input[type=number]{font:400 12.5px/1.3 var(--sans);background:transparent
 select{padding-right:4px}
 input[type=number]{width:72px}
 input[type=checkbox],input[type=radio]{accent-color:var(--ink)}
+input[type=text]{font:400 12.5px/1.3 var(--sans);background:transparent;border:0;border-bottom:1px solid var(--ink);border-radius:0;padding:5px 2px;color:var(--ink)}
+input[type=text]::placeholder{color:var(--muted)}
+.plist{list-style:none;margin:4px 0 0;padding:0}
+.plist li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:1px 6px;align-items:center;padding:7px 0;border-top:1px solid var(--rule)}
+.plist .pn{grid-column:1;grid-row:1;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plist .pd{grid-column:1;grid-row:2;font:400 10px/1.3 var(--mono);color:var(--muted);letter-spacing:.04em}
+.plist button{grid-row:1 / span 2;padding:5px 7px;font-size:9.5px}
+.plist button[data-load]{grid-column:2}
+.plist button[data-del]{grid-column:3}
+.plist li.empty{display:block;color:var(--muted);font-size:12px}
 input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:18px;margin:0;cursor:pointer}
 input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--ink)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:var(--panel);border:1.5px solid var(--ink);margin-top:-5px}
@@ -262,7 +272,7 @@ body:not([data-bdesign="sun"]) .sunctl{display:none}
       <option value="phase">Flow: back layer slides</option>
     </select>
     <label>Amount <input id="animAmt" type="range" min="0" max="1" step="0.01" value="0.8"><output id="animAmtO"></output></label>
-    <label>Period <input id="animPer" type="range" min="1" max="12" step="0.5" value="5"><output id="animPerO" style="min-width:36px"></output></label>
+    <label>Period <input id="animPer" type="range" min="1" max="30" step="0.5" value="8"><output id="animPerO" style="min-width:36px"></output></label>
     <span class="animNote" id="animNote"></span>
   </div>
 </header>
@@ -270,6 +280,14 @@ body:not([data-bdesign="sun"]) .sunctl{display:none}
 <div class="page">
 <div class="layout">
 <aside class="controls" id="panel" aria-label="Parameters">
+  <details open>
+    <summary>Saved settings</summary>
+    <div class="row"><input id="presetName" type="text" placeholder="Name, e.g. Sun spots v2" style="flex:1;min-width:0" aria-label="Name for these settings"><button id="presetSave" type="button">Save</button></div>
+    <ul id="presetList" class="plist" aria-label="Saved settings"></ul>
+    <div class="row"><label><input id="autoLoad" type="checkbox" checked> Open with my last settings</label></div>
+    <p class="hint" id="presetMsg"></p>
+  </details>
+
   <details open>
     <summary>Glass and cut</summary>
     <div class="row"><label for="R">Radius R</label><input id="R" type="number" min="5" max="2000" step="1" value="100"> mm <span class="hint">(sheets: same Ø)</span></div>
@@ -1355,6 +1373,7 @@ function statsHTML(ms){
       tile(planes ? 'Layer Ø' : 'Back plane Ø', (o.cfg.full ? 'full sphere' : mm(2*backRadius(o.cfg), 0)), planes ? 'both layers' : (o.cfg.full ? 'B on curved back' : `rim at c = ${mm(o.cfg.c, 0)}`)) +
       tile('Focus F′ from front', m.fV, m.fN) +
       tile('Fringe drift', m.driftV, m.driftN, 'How far the fringes at the centre move when the visitor moves.') +
+      tile('Motion speed', isFinite(m.slip) ? `${(m.slip / S.p).toFixed(2)} cycle` : '—', S.Dinf ? 'per 1° of view angle' : 'per 10 mm sideways step', 'How much of one pattern cycle the moiré (or each sun spot) changes when the visitor steps 10 mm sideways. Lower is slower: a larger pitch, thinner glass (cut closer to the centre) or a farther viewer reduce it.', true) +
       tile('If n is 0.01 higher', pct(m.relN, 1), `extra fringes ${extFr(m.relN)}`) +
       tile('Eye at ½× / 2×', `${pct(m.mA, 0)} / ${pct(m.mB, 0)}`, `${mm(m.dA*R, 0)} / ${mm(m.dB*R, 0)}`, 'Change of the centre scale with the eye at half or double the design distance.') +
       '</div>';
@@ -1386,6 +1405,7 @@ function statsHTML(ms){
     row('Moiré, design eye', m => mm(m.Mdes, 0)) +
     row('Slip / 10 mm step', m => mm(m.slip, 2), 'How far B slides against A at the centre when the visitor steps sideways.') +
     row('Fringe drift / 10 mm step', m => m.driftV) +
+    row('Motion / 10 mm step', m => isFinite(m.slip) ? `${(m.slip / S.p).toFixed(2)} cycle` : '—', 'Fraction of a pattern cycle the moiré changes per 10 mm sideways step. Lower is slower.') +
     row('Depth A to B', m => mm(m.o.parD.L, 0)) +
     row('Scale if n + 0.01', m => pct(m.relN, 1)) +
     row('Scale, eye at ½×', m => pct(m.mA, 0)) +
@@ -1594,7 +1614,7 @@ $('play').addEventListener('click', e => {
 
 /* ---------- wiring ---------- */
 document.querySelectorAll('aside input, aside select, #layersCard input, #viewCard input, input[name=obj]').forEach(el => {
-  if (el.id === 'nPreset') return;
+  if (el.id === 'nPreset' || el.id === 'presetName' || el.id === 'autoLoad') return;
   el.addEventListener('input', () => schedule(true));
   el.addEventListener('change', () => schedule(false));
 });
@@ -1643,8 +1663,75 @@ sizeObs.observe($('chartFit'));
 document.querySelectorAll('#viewWrap .pane, .art .fit').forEach(el => sizeObs.observe(el));
 
 if (window.innerWidth < 900){ document.body.classList.add('nopanel'); $('panelBtn').setAttribute('aria-pressed', 'false'); }
+/* ---------- saved settings (browser storage: private to this browser and this page) ---------- */
+const PKEY = 'sphereMoire.presets.v1', LKEY = 'sphereMoire.last.v1', AKEY = 'sphereMoire.autoload.v1';
+const store = {
+  get(k){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+const SKIP = new Set(['nPreset', 'presetName', 'autoLoad']);
+function snapshot(){
+  const v = {}, r = {};
+  document.querySelectorAll('#panel input, #panel select, #top input, #top select, #layersCard input, #viewCard input').forEach(el => {
+    if (SKIP.has(el.id)) return;
+    if (el.type === 'radio'){ if (el.checked) r[el.name] = el.value; }
+    else if (el.type === 'checkbox'){ if (el.id) v[el.id] = el.checked; }
+    else if (el.id) v[el.id] = el.value;
+  });
+  return { v, r, D0r: S.D0r, D0inf: S.D0inf, tab: S.tab };
+}
+function applySnapshot(sn){
+  if (!sn) return;
+  for (const id in (sn.v || {})){ const el = $(id); if (!el || SKIP.has(id)) continue; if (el.type === 'checkbox') el.checked = !!sn.v[id]; else el.value = sn.v[id]; }
+  for (const name in (sn.r || {})){ const el = document.querySelector(`input[name="${name}"][value="${sn.r[name]}"]`); if (el) el.checked = true; }
+  if (sn.D0r) S.D0r = sn.D0r;
+  S.D0inf = !!sn.D0inf;
+  if (sn.tab){ S.tab = sn.tab; document.querySelectorAll('.tabs [role=tab]').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === S.tab)); }
+}
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const presets = () => store.get(PKEY) || [];
+function renderPresets(msg){
+  const list = presets();
+  $('presetList').innerHTML = list.length
+    ? list.map((p, i) => `<li><span class="pn" title="${escHtml(p.name)}">${escHtml(p.name)}</span><span class="pd">${escHtml(p.date)}</span><button type="button" data-load="${i}">Load</button><button type="button" data-del="${i}">Delete</button></li>`).join('')
+    : '<li class="empty">No saved settings yet.</li>';
+  if (msg !== undefined) $('presetMsg').textContent = msg;
+}
+function stamp(){ const d = new Date(), z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; }
+$('presetSave').addEventListener('click', () => {
+  const list = presets(), name = ($('presetName').value.trim() || `Settings ${list.length + 1}`).slice(0, 80);
+  const item = { name, date: stamp(), state: snapshot() }, i = list.findIndex(p => p.name === name);
+  if (i >= 0) list[i] = item; else list.unshift(item);
+  if (store.set(PKEY, list)){ $('presetName').value = ''; renderPresets(i >= 0 ? `Updated “${name}”.` : `Saved “${name}”.`); }
+  else renderPresets('This browser does not allow saving here.');
+});
+$('presetName').addEventListener('keydown', e => { if (e.key === 'Enter') $('presetSave').click(); });
+$('presetList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const list = presets();
+  if (b.dataset.load !== undefined){
+    const p = list[+b.dataset.load]; if (!p) return;
+    applySnapshot(p.state); schedule(false); renderPresets(`Loaded “${p.name}”.`);
+  } else if (b.dataset.del !== undefined){
+    const i = +b.dataset.del;
+    if (b.dataset.confirm !== '1'){ b.dataset.confirm = '1'; b.textContent = 'Sure?'; setTimeout(() => { if (b.isConnected){ b.dataset.confirm = ''; b.textContent = 'Delete'; } }, 3000); return; }
+    const gone = list.splice(i, 1)[0];
+    store.set(PKEY, list); renderPresets(gone ? `Deleted “${gone.name}”.` : '');
+  }
+});
+$('autoLoad').addEventListener('change', e => store.set(AKEY, e.target.checked));
+let lastT = 0;
+function saveLastSoon(){ clearTimeout(lastT); lastT = setTimeout(() => store.set(LKEY, snapshot()), 700); }
+document.addEventListener('input', saveLastSoon); document.addEventListener('change', saveLastSoon); document.addEventListener('click', saveLastSoon);
+
 compute();
 $('k').value = Math.max(-1.2, Math.min(1.5, PRIMARY.parD.m0)).toFixed(3);
+{
+  const auto = store.get(AKEY);
+  $('autoLoad').checked = auto !== false;
+  if (auto !== false){ const last = store.get(LKEY); if (last) applySnapshot(last); }
+  renderPresets(auto !== false && store.get(LKEY) ? 'Opened with your last settings.' : '');
+}
 schedule(false);
 </script>
 </body>
